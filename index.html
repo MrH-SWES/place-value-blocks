@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <title>Place Value Visualizer</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet"/>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    :root {
+      --bg: #faf9f6;
+      --surface: #fff;
+      --ink: #1e293b;
+      --muted: #94a3b8;
+      --accent: #6366f1;
+      --h-color: #3b82f6;
+      --t-color: #f59e0b;
+      --o-color: #ef4444;
+      --success: #22c55e;
+    }
+    body {
+      font-family:'Nunito',sans-serif;
+      background:var(--bg); color:var(--ink);
+      height:100vh; height:100dvh;
+      overflow:hidden; user-select:none;
+      display:flex; flex-direction:column;
+    }
+    #topBar {
+      padding:8px 16px; display:flex; align-items:center;
+      justify-content:space-between; flex-shrink:0;
+      background:var(--surface); border-bottom:1px solid #e5e7eb;
+    }
+    .mode-tabs { display:flex; gap:3px; background:#f1f5f9; border-radius:10px; padding:3px; }
+    .mode-tab {
+      background:transparent; color:var(--muted); border:none;
+      padding:7px 14px; border-radius:8px; font-size:12px;
+      font-weight:700; font-family:inherit; cursor:pointer; white-space:nowrap;
+    }
+    .mode-tab.active { background:var(--accent); color:#fff; }
+    .top-btns { display:flex; gap:6px; }
+    .action-btn {
+      background:var(--surface); border:2px solid #e5e7eb; color:var(--ink);
+      padding:6px 14px; border-radius:8px; font-size:12px;
+      font-weight:700; font-family:inherit; cursor:pointer;
+    }
+    .action-btn:hover { border-color:var(--accent); color:var(--accent); }
+    .action-btn.active { background:var(--accent); color:#fff; border-color:var(--accent); }
+    #scoreBar {
+      display:none; padding:5px 16px; background:var(--surface);
+      border-bottom:1px solid #e5e7eb; font-size:13px;
+      font-weight:700; color:var(--muted); text-align:center;
+    }
+    #scoreBar.active { display:block; }
+    #numberSection {
+      flex-shrink:0; display:flex; align-items:center;
+      justify-content:center; padding:8px 20px; gap:4px; min-height:74px;
+    }
+    .num-col { display:flex; flex-direction:column; align-items:center; }
+    .num-digit { font-size:48px; font-weight:900; line-height:1; padding:0 3px; }
+    .num-digit.hundreds { color:var(--h-color); }
+    .num-digit.tens { color:var(--t-color); }
+    .num-digit.ones { color:var(--o-color); }
+    .num-label { font-size:10px; font-weight:700; margin-top:1px; }
+    #quizInput {
+      font-size:42px; font-weight:900; color:var(--ink);
+      background:var(--bg); border:3px solid var(--accent);
+      border-radius:14px; padding:4px 16px; width:160px;
+      text-align:center; font-family:inherit; outline:none;
+    }
+    #quizInput.correct { border-color:var(--success); background:#f0fdf4; }
+    #quizInput.wrong { border-color:#ef4444; background:#fef2f2; }
+    #quizCheck {
+      background:var(--accent); color:#fff; border:none;
+      padding:8px 18px; border-radius:10px; font-size:15px;
+      font-weight:900; font-family:inherit; cursor:pointer; margin-left:8px;
+    }
+    #quizFeedback { font-size:20px; font-weight:900; margin-left:10px; min-width:30px; }
+    #vizArea {
+      flex:1; display:flex; min-height:0; overflow:hidden;
+      padding:4px 8px 8px; gap:8px; align-items:stretch;
+    }
+    .viz-col { display:flex; flex-direction:column; align-items:center; }
+    .viz-col-label {
+      font-size:11px; font-weight:900; margin-bottom:3px;
+      padding:2px 10px; border-radius:5px;
+    }
+    .viz-col-label.hundreds { background:#eff6ff; color:var(--h-color); }
+    .viz-col-label.tens { background:#fffbeb; color:var(--t-color); }
+    .viz-col-label.ones { background:#fef2f2; color:var(--o-color); }
+    .viz-canvas-wrap { flex:1; display:flex; align-items:center; justify-content:center; min-height:0; }
+    #buildControls {
+      display:none; padding:8px 16px; background:var(--surface);
+      border-top:1px solid #e5e7eb; flex-shrink:0;
+    }
+    #buildControls.active { display:flex; justify-content:center; gap:10px; }
+    .build-group { display:flex; align-items:center; gap:4px; }
+    .build-btn {
+      display:flex; align-items:center; gap:4px;
+      padding:8px 14px; border-radius:10px;
+      font-size:13px; font-weight:900; font-family:inherit;
+      cursor:pointer; border:2px solid;
+    }
+    .build-btn:hover { transform:translateY(-2px); }
+    .build-btn:active { transform:scale(.96); }
+    .build-btn.h-btn { background:#eff6ff; border-color:#93c5fd; color:var(--h-color); }
+    .build-btn.t-btn { background:#fffbeb; border-color:#fde68a; color:var(--t-color); }
+    .build-btn.o-btn { background:#fef2f2; border-color:#fca5a5; color:var(--o-color); }
+    .build-mini {
+      background:transparent; border:1px solid #d1d5db; color:var(--muted);
+      width:26px; height:26px; border-radius:6px;
+      font-size:14px; font-weight:900; cursor:pointer;
+      display:flex; align-items:center; justify-content:center;
+    }
+    .build-mini:hover { border-color:var(--ink); color:var(--ink); }
+  </style>
+</head>
+<body>
+
+  <div id="topBar">
+    <div class="mode-tabs">
+      <button class="mode-tab active" data-mode="explore">Explore</button>
+      <button class="mode-tab" data-mode="identify">Name It</button>
+      <button class="mode-tab" data-mode="build">Build It</button>
+    </div>
+    <div class="top-btns">
+      <button class="action-btn" id="labelBtn">Labels</button>
+      <button class="action-btn" id="newBtn">New Number</button>
+    </div>
+  </div>
+  <div id="scoreBar"></div>
+  <div id="numberSection"></div>
+
+  <div id="vizArea">
+    <div class="viz-col" id="colHundreds" style="flex:4">
+      <div class="viz-col-label hundreds">Hundreds</div>
+      <div class="viz-canvas-wrap"><canvas id="cvHundreds"></canvas></div>
+    </div>
+    <div class="viz-col" id="colTens" style="flex:1.5">
+      <div class="viz-col-label tens">Tens</div>
+      <div class="viz-canvas-wrap"><canvas id="cvTens"></canvas></div>
+    </div>
+    <div class="viz-col" id="colOnes" style="flex:0.4">
+      <div class="viz-col-label ones">Ones</div>
+      <div class="viz-canvas-wrap"><canvas id="cvOnes"></canvas></div>
+    </div>
+  </div>
+
+  <div id="buildControls">
+    <div class="build-group">
+      <button class="build-mini" data-place="h" data-dir="-1">−</button>
+      <button class="build-btn h-btn" data-place="h" data-dir="1">+ Hundred</button>
+    </div>
+    <div class="build-group">
+      <button class="build-mini" data-place="t" data-dir="-1">−</button>
+      <button class="build-btn t-btn" data-place="t" data-dir="1">+ Ten</button>
+    </div>
+    <div class="build-group">
+      <button class="build-mini" data-place="o" data-dir="-1">−</button>
+      <button class="build-btn o-btn" data-place="o" data-dir="1">+ One</button>
+    </div>
+  </div>
+
+  <script>
+    let mode='explore', target=0, bH=0, bT=0, bO=0, score=0, attempts=0;
+    let showLabels = false;
+
+    const H_COLOR='#3b82f6';
+    const T_COLOR='#f59e0b';
+    const O_COLOR='#ef4444';
+    const GHOST='#d4d4d8', GHOST_LIGHT='#e8e8ea';
+
+    const N = 10;
+    const GAP_RATIO = 0.25;
+    const DEPTH_RATIO = 0.35;
+
+    function rand3() {
+      const h=Math.floor(Math.random()*9)+1,t=Math.floor(Math.random()*10),o=Math.floor(Math.random()*10);
+      return(t===0&&o===0)?h*100+Math.floor(Math.random()*9)+1:h*100+t*10+o;
+    }
+    function decompose(n){return{h:Math.floor(n/100),t:Math.floor((n%100)/10),o:n%10};}
+
+    function getBlockSize() {
+      return 30;
+    }
+
+    const LABEL_FONT_SIZE = 13; // ~10pt
+
+    function initCanvas(cv, w, h) {
+      const dpr = window.devicePixelRatio||1;
+      cv.width=w*dpr; cv.height=h*dpr;
+      cv.style.width=w+'px'; cv.style.height=h+'px';
+      const ctx=cv.getContext('2d'); ctx.scale(dpr,dpr);
+      ctx.clearRect(0,0,w,h); return ctx;
+    }
+
+    function blockPos(i, blk) { return i * blk * (1 + GAP_RATIO); }
+
+    function colorShift(hex, amount) {
+      let r = parseInt(hex.slice(1,3),16);
+      let g = parseInt(hex.slice(3,5),16);
+      let b = parseInt(hex.slice(5,7),16);
+      r = Math.min(255, Math.max(0, r + amount));
+      g = Math.min(255, Math.max(0, g + amount));
+      b = Math.min(255, Math.max(0, b + amount));
+      return `rgb(${r},${g},${b})`;
+    }
+
+    // ═══════════════════════════════════════════
+    // ISOMETRIC CUBE — depth goes UP-RIGHT
+    // ═══════════════════════════════════════════
+    function drawIsoCube(ctx, x, y, size, color) {
+      const d = size * DEPTH_RATIO;
+
+      // Front face
+      ctx.beginPath();
+      ctx.rect(x, y, size, size);
+      ctx.fillStyle = color;
+      ctx.fill();
+
+      // Top face (lighter) — parallelogram up-right
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+      ctx.lineTo(x + d, y - d);
+      ctx.lineTo(x + size + d, y - d);
+      ctx.lineTo(x + size, y);
+      ctx.closePath();
+      ctx.fillStyle = colorShift(color, 45);
+      ctx.fill();
+
+      // Right face (darker) — parallelogram up-right
+      ctx.beginPath();
+      ctx.moveTo(x + size, y);
+      ctx.lineTo(x + size + d, y - d);
+      ctx.lineTo(x + size + d, y + size - d);
+      ctx.lineTo(x + size, y + size);
+      ctx.closePath();
+      ctx.fillStyle = colorShift(color, -40);
+      ctx.fill();
+
+      // Edges
+      ctx.strokeStyle = colorShift(color, -60);
+      ctx.lineWidth = 0.5;
+      ctx.beginPath(); ctx.rect(x, y, size, size); ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(x, y); ctx.lineTo(x+d, y-d); ctx.lineTo(x+size+d, y-d); ctx.lineTo(x+size, y);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(x+size, y); ctx.lineTo(x+size+d, y-d); ctx.lineTo(x+size+d, y+size-d); ctx.lineTo(x+size, y+size);
+      ctx.stroke();
+
+      // Highlight
+      ctx.fillStyle = 'rgba(255,255,255,0.22)';
+      ctx.fillRect(x + 1.5, y + 1.5, size * 0.3, size * 0.3);
+    }
+
+    function drawBlockOutline(ctx, x, y, size, color) {
+      ctx.beginPath(); ctx.rect(x, y, size, size);
+      ctx.strokeStyle = color; ctx.lineWidth = 1;
+      ctx.setLineDash([2,2]); ctx.stroke(); ctx.setLineDash([]);
+    }
+
+    // ═══════════════════
+    // ONES: column, labels on right
+    // ═══════════════════
+    function drawOnes(count, blk) {
+      const cv = document.getElementById('cvOnes');
+      const step = blk * (1 + GAP_RATIO);
+      const rodH = step * (N-1) + blk;
+      const d = blk * DEPTH_RATIO;
+      const pad = 6;
+      const labelW = showLabels ? 30 : 0;
+      const cw = blk + d + pad*2 + labelW;
+      const ch = rodH + d + pad*2;
+      const ctx = initCanvas(cv, cw, ch);
+
+      const ox = pad;
+      const oy = pad + d;
+
+      ctx.beginPath();
+      ctx.rect(ox - 2, oy - 2, blk + 4, rodH + 4);
+      ctx.strokeStyle = GHOST; ctx.lineWidth = 1.5;
+      ctx.setLineDash([4,3]); ctx.stroke(); ctx.setLineDash([]);
+
+      for(let i = 0; i < N; i++) {
+        const y = oy + blockPos(i, blk);
+        const slot = N - 1 - i;
+        if(slot < count) {
+          drawIsoCube(ctx, ox, y, blk, O_COLOR);
+          if(showLabels) {
+            ctx.font = `900 ${LABEL_FONT_SIZE}px Nunito`;
+            ctx.fillStyle = O_COLOR;
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(slot + 1, ox + blk + d + 4, y + blk/2);
+          }
+        } else {
+          drawBlockOutline(ctx, ox, y, blk, GHOST_LIGHT);
+        }
+      }
+    }
+
+    // ═══════════════════
+    // TENS: 10×10 grid, labels under columns
+    // ═══════════════════
+    function drawTens(count, blk) {
+      const cv = document.getElementById('cvTens');
+      const step = blk * (1 + GAP_RATIO);
+      const gridPx = step * (N-1) + blk;
+      const d = blk * DEPTH_RATIO;
+      const pad = 8;
+      const labelH = showLabels ? 20 : 0;
+      const cw = gridPx + d + pad*2;
+      const ch = gridPx + d + pad*2 + labelH;
+      const ctx = initCanvas(cv, cw, ch);
+
+      const ox = pad;
+      const oy = pad + d;
+
+      ctx.beginPath();
+      ctx.rect(ox - 3, oy - 3, gridPx + 6, gridPx + 6);
+      ctx.strokeStyle = GHOST; ctx.lineWidth = 1.5;
+      ctx.setLineDash([4,3]); ctx.stroke(); ctx.setLineDash([]);
+
+      for(let col = 0; col < N; col++) {
+        const x = ox + blockPos(col, blk);
+        const filled = col < count;
+
+        for(let row = 0; row < N; row++) {
+          const y = oy + blockPos(row, blk);
+          if(filled) {
+            drawIsoCube(ctx, x, y, blk, T_COLOR);
+          } else {
+            drawBlockOutline(ctx, x, y, blk, GHOST_LIGHT);
+          }
+        }
+
+        if(filled && showLabels) {
+          ctx.font = `900 ${LABEL_FONT_SIZE}px Nunito`;
+          ctx.fillStyle = T_COLOR;
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'top';
+          ctx.fillText((col+1)*10, x + blk/2, oy + gridPx + 6);
+        }
+      }
+    }
+
+    // ═══════════════════
+    // HUNDREDS: isometric cube-of-cubes
+    // Flats on y/z axes, stacking left-to-right along x
+    // Spaced like tens columns (same step), depth layers go up-right
+    // ═══════════════════
+    function drawHundreds(count, blk) {
+      const cv = document.getElementById('cvHundreds');
+      const step = blk * (1 + GAP_RATIO); // same spacing as tens columns
+      const d = blk * DEPTH_RATIO;
+
+      // Front face of one flat: 1 block wide × 10 blocks tall
+      const colH = step * (N-1) + blk;
+
+      // Depth per layer — visible enough to clearly show 10 layers
+      const depthStep = d * 0.7;
+      const totalDepthX = depthStep * N;
+      const totalDepthY = depthStep * N;
+
+      // Flats are spaced exactly like tens columns: step apart
+      const totalW = step * (N-1) + blk + totalDepthX + d;
+
+      const pad = 10;
+      const labelH = showLabels ? 20 : 0;
+      const cw = totalW + pad*2;
+      const ch = colH + totalDepthY + d + pad*2 + labelH;
+      const ctx = initCanvas(cv, cw, ch);
+
+      const oy = pad + totalDepthY + d; // top of front faces
+
+      for(let flat = 0; flat < N; flat++) {
+        const fx = pad + flat * step; // same spacing as tens!
+        const filled = flat < count;
+
+        if(filled) {
+          // Draw 10 depth layers back-to-front
+          for(let layer = N-1; layer >= 0; layer--) {
+            const lx = fx + depthStep * layer;
+            const ly = oy - depthStep * layer;
+            for(let row = 0; row < N; row++) {
+              drawIsoCube(ctx, lx, ly + blockPos(row, blk), blk, H_COLOR);
+            }
+          }
+        } else {
+          // Ghost: just the front column outline
+          for(let row = 0; row < N; row++) {
+            drawBlockOutline(ctx, fx, oy + blockPos(row, blk), blk, GHOST_LIGHT);
+          }
+        }
+
+        // Label directly under the front block
+        if(filled && showLabels) {
+          ctx.font = `900 ${LABEL_FONT_SIZE}px Nunito`;
+          ctx.fillStyle = H_COLOR;
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'top';
+          ctx.fillText((flat+1)*100, fx + blk/2, oy + colH + 6);
+        }
+      }
+    }
+
+    function renderViz(h, t, o) {
+      const blk = getBlockSize();
+      drawOnes(o, blk);
+      drawTens(t, blk);
+      drawHundreds(h, blk);
+    }
+
+    function renderNumber(n, forQuiz) {
+      const sec=document.getElementById('numberSection');
+      sec.innerHTML='';
+      if(forQuiz){
+        const inp=document.createElement('input');
+        inp.id='quizInput';inp.type='text';inp.placeholder='???';
+        inp.maxLength=3;inp.inputMode='numeric';
+        inp.addEventListener('keydown',e=>{if(e.key==='Enter')checkIdentify();});
+        const btn=document.createElement('button');
+        btn.id='quizCheck';btn.textContent='Check';
+        btn.addEventListener('click',checkIdentify);
+        const fb=document.createElement('span');fb.id='quizFeedback';
+        sec.appendChild(inp);sec.appendChild(btn);sec.appendChild(fb);
+        setTimeout(()=>inp.focus(),100);
+        return;
+      }
+      const{h,t,o}=decompose(n);
+      [{v:h,c:'hundreds'},{v:t,c:'tens'},{v:o,c:'ones'}].forEach(d=>{
+        const col=document.createElement('div');col.className='num-col';
+        const dig=document.createElement('div');dig.className=`num-digit ${d.c}`;dig.textContent=d.v;
+        const lbl=document.createElement('div');lbl.className='num-label';
+        lbl.style.color=`var(--${d.c.charAt(0)}-color)`;lbl.textContent=d.c;
+        col.appendChild(dig);col.appendChild(lbl);sec.appendChild(col);
+      });
+    }
+
+    function startExplore(){
+      mode='explore';target=rand3();
+      document.getElementById('buildControls').classList.remove('active');
+      document.getElementById('scoreBar').classList.remove('active');
+      renderNumber(target,false);
+      const{h,t,o}=decompose(target);renderViz(h,t,o);
+    }
+    function startIdentify(){
+      mode='identify';target=rand3();
+      document.getElementById('buildControls').classList.remove('active');
+      document.getElementById('scoreBar').classList.add('active');updateScore();
+      renderNumber(target,true);
+      const{h,t,o}=decompose(target);renderViz(h,t,o);
+    }
+    function startBuild(){
+      mode='build';target=rand3();bH=0;bT=0;bO=0;
+      document.getElementById('buildControls').classList.add('active');
+      document.getElementById('scoreBar').classList.add('active');updateScore();
+      renderNumber(target,false);renderViz(0,0,0);
+    }
+    function checkIdentify(){
+      const inp=document.getElementById('quizInput');
+      const fb=document.getElementById('quizFeedback');
+      const guess=parseInt(inp.value);if(isNaN(guess))return;
+      attempts++;
+      if(guess===target){
+        score++;inp.classList.add('correct');
+        fb.textContent='✓';fb.style.color='var(--success)';updateScore();
+        setTimeout(()=>{inp.classList.remove('correct');startIdentify();},1200);
+      }else{
+        inp.classList.add('wrong');
+        fb.textContent='✗';fb.style.color='#ef4444';updateScore();
+        setTimeout(()=>{inp.classList.remove('wrong');fb.textContent='';inp.value='';inp.focus();},1000);
+      }
+    }
+    function checkBuild(){
+      if(bH*100+bT*10+bO===target){
+        score++;attempts++;updateScore();
+        document.getElementById('vizArea').style.background='#f0fdf4';
+        setTimeout(()=>{document.getElementById('vizArea').style.background='';startBuild();},1000);
+      }
+    }
+    function updateScore(){
+      document.getElementById('scoreBar').textContent=attempts===0?'Try your best!':`${score} correct out of ${attempts}`;
+    }
+
+    // Labels toggle
+    document.getElementById('labelBtn').addEventListener('click',()=>{
+      showLabels = !showLabels;
+      document.getElementById('labelBtn').classList.toggle('active', showLabels);
+      if(mode==='build') renderViz(bH,bT,bO);
+      else { const{h,t,o}=decompose(target); renderViz(h,t,o); }
+    });
+
+    document.querySelectorAll('.mode-tab').forEach(tab=>{
+      tab.addEventListener('click',()=>{
+        document.querySelectorAll('.mode-tab').forEach(t=>t.classList.remove('active'));
+        tab.classList.add('active');score=0;attempts=0;
+        const m=tab.dataset.mode;
+        if(m==='explore')startExplore();else if(m==='identify')startIdentify();else startBuild();
+      });
+    });
+    document.getElementById('newBtn').addEventListener('click',()=>{
+      if(mode==='explore')startExplore();else if(mode==='identify')startIdentify();else startBuild();
+    });
+    document.querySelectorAll('.build-btn,.build-mini').forEach(btn=>{
+      btn.addEventListener('click',()=>{
+        if(mode!=='build')return;
+        const p=btn.dataset.place,d=parseInt(btn.dataset.dir);
+        if(p==='h')bH=Math.max(0,Math.min(9,bH+d));
+        else if(p==='t')bT=Math.max(0,Math.min(9,bT+d));
+        else bO=Math.max(0,Math.min(9,bO+d));
+        renderViz(bH,bT,bO);checkBuild();
+      });
+    });
+    document.getElementById('numberSection').addEventListener('click',()=>{
+      if(mode!=='explore')return;
+      const num=prompt('Enter a number (1–999):');
+      if(!num)return;const n=parseInt(num);
+      if(isNaN(n)||n<1||n>999)return;
+      target=n;renderNumber(n,false);
+      const{h,t,o}=decompose(n);renderViz(h,t,o);
+    });
+
+    let rT;
+    window.addEventListener('resize',()=>{
+      clearTimeout(rT);
+      rT=setTimeout(()=>{
+        if(mode==='build')renderViz(bH,bT,bO);
+        else{const{h,t,o}=decompose(target);renderViz(h,t,o);}
+      },100);
+    });
+
+    startExplore();
+  </script>
+</body>
+</html>
