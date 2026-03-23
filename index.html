@@ -7,530 +7,257 @@
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet"/>
   <style>
     *{margin:0;padding:0;box-sizing:border-box}
-    :root {
-      --bg: #faf9f6;
-      --surface: #fff;
-      --ink: #1e293b;
-      --muted: #94a3b8;
-      --accent: #6366f1;
-      --h-color: #3b82f6;
-      --t-color: #f59e0b;
-      --o-color: #ef4444;
-      --success: #22c55e;
-    }
-    body {
-      font-family:'Nunito',sans-serif;
-      background:var(--bg); color:var(--ink);
-      height:100vh; height:100dvh;
-      overflow:hidden; user-select:none;
-      display:flex; flex-direction:column;
-    }
-    #topBar {
-      padding:8px 16px; display:flex; align-items:center;
-      justify-content:space-between; flex-shrink:0;
-      background:var(--surface); border-bottom:1px solid #e5e7eb;
-    }
-    .mode-tabs { display:flex; gap:3px; background:#f1f5f9; border-radius:10px; padding:3px; }
-    .mode-tab {
-      background:transparent; color:var(--muted); border:none;
-      padding:7px 14px; border-radius:8px; font-size:12px;
-      font-weight:700; font-family:inherit; cursor:pointer; white-space:nowrap;
-    }
-    .mode-tab.active { background:var(--accent); color:#fff; }
-    .top-btns { display:flex; gap:6px; }
-    .action-btn {
-      background:var(--surface); border:2px solid #e5e7eb; color:var(--ink);
-      padding:6px 14px; border-radius:8px; font-size:12px;
-      font-weight:700; font-family:inherit; cursor:pointer;
-    }
-    .action-btn:hover { border-color:var(--accent); color:var(--accent); }
-    .action-btn.active { background:var(--accent); color:#fff; border-color:var(--accent); }
-    #scoreBar {
-      display:none; padding:5px 16px; background:var(--surface);
-      border-bottom:1px solid #e5e7eb; font-size:13px;
-      font-weight:700; color:var(--muted); text-align:center;
-    }
-    #scoreBar.active { display:block; }
-    #numberSection {
-      flex-shrink:0; display:flex; align-items:center;
-      justify-content:center; padding:8px 20px; gap:4px; min-height:74px;
-    }
-    .num-col { display:flex; flex-direction:column; align-items:center; }
-    .num-digit { font-size:48px; font-weight:900; line-height:1; padding:0 3px; }
-    .num-digit.hundreds { color:var(--h-color); }
-    .num-digit.tens { color:var(--t-color); }
-    .num-digit.ones { color:var(--o-color); }
-    .num-label { font-size:10px; font-weight:700; margin-top:1px; }
-    #quizInput {
-      font-size:42px; font-weight:900; color:var(--ink);
-      background:var(--bg); border:3px solid var(--accent);
-      border-radius:14px; padding:4px 16px; width:160px;
-      text-align:center; font-family:inherit; outline:none;
-    }
-    #quizInput.correct { border-color:var(--success); background:#f0fdf4; }
-    #quizInput.wrong { border-color:#ef4444; background:#fef2f2; }
-    #quizCheck {
-      background:var(--accent); color:#fff; border:none;
-      padding:8px 18px; border-radius:10px; font-size:15px;
-      font-weight:900; font-family:inherit; cursor:pointer; margin-left:8px;
-    }
-    #quizFeedback { font-size:20px; font-weight:900; margin-left:10px; min-width:30px; }
-    #vizArea {
-      flex:1; display:flex; min-height:0; overflow:hidden;
-      padding:4px 8px 8px; gap:8px; align-items:stretch;
-    }
-    .viz-col { display:flex; flex-direction:column; align-items:center; }
-    .viz-col-label {
-      font-size:11px; font-weight:900; margin-bottom:3px;
-      padding:2px 10px; border-radius:5px;
-    }
-    .viz-col-label.hundreds { background:#eff6ff; color:var(--h-color); }
-    .viz-col-label.tens { background:#fffbeb; color:var(--t-color); }
-    .viz-col-label.ones { background:#fef2f2; color:var(--o-color); }
-    .viz-canvas-wrap { flex:1; display:flex; align-items:center; justify-content:center; min-height:0; }
-    #buildControls {
-      display:none; padding:8px 16px; background:var(--surface);
-      border-top:1px solid #e5e7eb; flex-shrink:0;
-    }
-    #buildControls.active { display:flex; justify-content:center; gap:10px; }
-    .build-group { display:flex; align-items:center; gap:4px; }
-    .build-btn {
-      display:flex; align-items:center; gap:4px;
-      padding:8px 14px; border-radius:10px;
-      font-size:13px; font-weight:900; font-family:inherit;
-      cursor:pointer; border:2px solid;
-    }
-    .build-btn:hover { transform:translateY(-2px); }
-    .build-btn:active { transform:scale(.96); }
-    .build-btn.h-btn { background:#eff6ff; border-color:#93c5fd; color:var(--h-color); }
-    .build-btn.t-btn { background:#fffbeb; border-color:#fde68a; color:var(--t-color); }
-    .build-btn.o-btn { background:#fef2f2; border-color:#fca5a5; color:var(--o-color); }
-    .build-mini {
-      background:transparent; border:1px solid #d1d5db; color:var(--muted);
-      width:26px; height:26px; border-radius:6px;
-      font-size:14px; font-weight:900; cursor:pointer;
-      display:flex; align-items:center; justify-content:center;
-    }
-    .build-mini:hover { border-color:var(--ink); color:var(--ink); }
+    body{font-family:'Nunito',sans-serif;background:#faf9f6;color:#1e293b;height:100vh;height:100dvh;overflow:hidden;user-select:none;display:flex;flex-direction:column}
+    #topBar{padding:8px 16px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;background:#fff;border-bottom:1px solid #e5e7eb;z-index:10}
+    .btns{display:flex;gap:6px;flex-wrap:wrap}
+    .ab{background:#fff;border:2px solid #e5e7eb;color:#1e293b;padding:6px 14px;border-radius:8px;font-size:12px;font-weight:700;font-family:inherit;cursor:pointer}
+    .ab:hover{border-color:#6366f1;color:#6366f1}.ab.on{background:#6366f1;color:#fff;border-color:#6366f1}
+    #numBar{flex-shrink:0;display:flex;align-items:center;position:relative;padding:10px 16px;min-height:86px;background:#fff;border-bottom:1px solid #f1f5f9}
+    #vp{flex:1;position:relative;overflow:hidden;cursor:grab;touch-action:none}
+    #vp:active{cursor:grabbing}
+    canvas{position:absolute;top:0;left:0}
+    #hint{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);font-size:11px;font-weight:700;color:#94a3b8;background:rgba(255,255,255,.9);padding:4px 16px;border-radius:8px;pointer-events:none;transition:opacity 2s}
+    #hint.gone{opacity:0}
+    .digit{cursor:pointer;border-radius:6px;padding:0 4px;transition:background .15s,color .15s}.digit:hover{background:#e2e8f0!important}
   </style>
 </head>
 <body>
-
-  <div id="topBar">
-    <div class="mode-tabs">
-      <button class="mode-tab active" data-mode="explore">Explore</button>
-      <button class="mode-tab" data-mode="identify">Name It</button>
-      <button class="mode-tab" data-mode="build">Build It</button>
-    </div>
-    <div class="top-btns">
-      <button class="action-btn" id="labelBtn">Labels</button>
-      <button class="action-btn" id="newBtn">New Number</button>
-    </div>
+<div id="topBar">
+  <span style="font-size:13px;font-weight:900;color:#6366f1">Place Value Visualizer</span>
+  <div class="btns">
+    <button class="ab" id="lessonBtn">📖 Lesson</button>
+    <button class="ab" id="decBtn">Decimals</button>
+    <button class="ab" id="lblBtn">Labels</button>
+    <button class="ab" id="zeroBtn">Show Zeros</button>
+    <button class="ab" id="newBtn">New Number</button>
   </div>
-  <div id="scoreBar"></div>
-  <div id="numberSection"></div>
+</div>
+<div id="numBar">
+  <input type="text" id="numInput" placeholder="Type a number…" autocomplete="off" style="font-family:inherit;font-size:20px;font-weight:900;color:#1e293b;border:2px solid #e5e7eb;border-radius:10px;padding:8px 14px;width:190px;text-align:center;outline:none;background:#fff;position:relative;z-index:2" onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#e5e7eb'" />
+  <span id="numDisplay" style="position:absolute;left:50%;transform:translateX(-50%);font-size:56px;font-weight:900;color:#1e293b;display:flex;align-items:baseline"></span>
+</div>
+<div id="vp"><canvas id="cv"></canvas><div id="hint">drag to pan · scroll to zoom · click a digit to highlight</div></div>
+<script>
+// ═══════════════════════════════════════════
+// PLACES
+// ═══════════════════════════════════════════
+const CC=['#ef4444','#3b82f6','#22c55e','#f59e0b','#8b5cf6','#0d9488'];
+const NAMES=['Millions','Hundred-Thousands','Ten-Thousands','Thousands','Hundreds','Tens','Ones','Tenths','Hundredths','Thousandths'];
+const SHAPES=['cube','flat','stick','cube','flat','stick','cube','flat','stick','cube'];
+const DEC=7,ONES=6,NP=10;
+const P=NAMES.map((n,i)=>({name:n,color:CC[i%6],shape:SHAPES[i],exp:6-i}));
 
-  <div id="vizArea">
-    <div class="viz-col" id="colHundreds" style="flex:4">
-      <div class="viz-col-label hundreds">Hundreds</div>
-      <div class="viz-canvas-wrap"><canvas id="cvHundreds"></canvas></div>
-    </div>
-    <div class="viz-col" id="colTens" style="flex:1.5">
-      <div class="viz-col-label tens">Tens</div>
-      <div class="viz-canvas-wrap"><canvas id="cvTens"></canvas></div>
-    </div>
-    <div class="viz-col" id="colOnes" style="flex:0.4">
-      <div class="viz-col-label ones">Ones</div>
-      <div class="viz-canvas-wrap"><canvas id="cvOnes"></canvas></div>
-    </div>
-  </div>
+// ═══════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════
+const U=8,N=10,GAP=0.2,DEP=0.3,FLOOR_Y_OFFSET=120,ZOOM_MIN=0.01,ZOOM_MAX=100;
+let digits=Array(NP).fill(0);
+let showLabels=false,showZeros=false,showDecimals=false;
+let panX=0,zoomLvl=1.0,enteredStr='';
+let highlightedPlace=null,pulsePhase=0;
 
-  <div id="buildControls">
-    <div class="build-group">
-      <button class="build-mini" data-place="h" data-dir="-1">−</button>
-      <button class="build-btn h-btn" data-place="h" data-dir="1">+ Hundred</button>
-    </div>
-    <div class="build-group">
-      <button class="build-mini" data-place="t" data-dir="-1">−</button>
-      <button class="build-btn t-btn" data-place="t" data-dir="1">+ Ten</button>
-    </div>
-    <div class="build-group">
-      <button class="build-mini" data-place="o" data-dir="-1">−</button>
-      <button class="build-btn o-btn" data-place="o" data-dir="1">+ One</button>
-    </div>
-  </div>
+// ═══════════════════════════════════════════
+// UTILITIES
+// ═══════════════════════════════════════════
+function cs(hex,a){let r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);return`rgb(${Math.min(255,Math.max(0,r+a))},${Math.min(255,Math.max(0,g+a))},${Math.min(255,Math.max(0,b+a))})`}
+function bp(i,u){return i*u*(1+GAP)}
+function stickLen(u){return bp(N-1,u)+u}
+function fv(v){if(Math.abs(v)>=1)return String(Math.round(v)).replace(/\B(?=(\d{3})+(?!\d))/g,',');if(v===0)return'0';const d=Math.max(1,Math.round(-Math.log10(Math.abs(v))));return String(parseFloat((Math.round(v*Math.pow(10,d))/Math.pow(10,d)).toFixed(d+1)))}
+function addCommas(s){const p=s.split('.');let wf='',w=(p[0]||'0').split('').reverse();for(let i=0;i<w.length;i++){if(i>0&&i%3===0)wf=','+wf;wf=w[i]+wf}return p[1]!==undefined?wf+'.'+p[1]:wf}
+function unitForPlace(pi){const z=U*zoomLvl,sL=stickLen(z),e=P[pi].exp;if(e>=0&&e<=2)return z;if(e>=3&&e<=5)return sL;if(e===6)return stickLen(sL);if(e>=-3&&e<=-1)return z/(sL/z);return z}
+function secDims(u,shape){const sL=stickLen(u),d=u*DEP,ds=d*0.6;if(shape==='cube')return{w:u+d,h:sL+d};if(shape==='stick')return{w:sL+d,h:sL+d};return{w:sL+ds*N+d,h:sL+ds*N+d}}
+function getDEC_GAP(){return unitForPlace(ONES)*0.75}
+function colW(pi){const u=unitForPlace(pi),dims=secDims(u,P[pi].shape);return dims.w+Math.max(P[pi].shape==='cube'?u*3:u*0.5,30)}
+function worldX(pi){let x=0;if(pi<ONES){for(let i=ONES-1;i>=pi;i--){x-=colW(i);if(i===DEC)x-=getDEC_GAP()}}else if(pi>ONES){for(let i=ONES+1;i<=pi;i++){x+=colW(i-1);if(i===DEC)x+=getDEC_GAP()}}return x}
 
-  <script>
-    let mode='explore', target=0, bH=0, bT=0, bO=0, score=0, attempts=0;
-    let showLabels = false;
+// ═══════════════════════════════════════════
+// NUMBER MANAGEMENT
+// ═══════════════════════════════════════════
+function setNumber(n){const w=Math.floor(n),f=Math.round((n-w)*1000);digits[0]=Math.floor(w/1e6)%10;digits[1]=Math.floor(w/1e5)%10;digits[2]=Math.floor(w/1e4)%10;digits[3]=Math.floor(w/1e3)%10;digits[4]=Math.floor(w/100)%10;digits[5]=Math.floor(w/10)%10;digits[6]=w%10;digits[7]=Math.floor(f/100)%10;digits[8]=Math.floor(f/10)%10;digits[9]=f%10;enteredStr=String(n)}
+function rand(){const styles=[()=>String(Math.floor(Math.random()*9+1)),()=>String(Math.floor(Math.random()*90+10)),()=>String(Math.floor(Math.random()*900+100)),()=>String(Math.floor(Math.random()*9000+1000)),()=>String(Math.floor(Math.random()*90000+10000)),()=>String(Math.floor(Math.random()*900000+100000)),()=>String(Math.floor(Math.random()*9000000+1000000)),()=>(Math.random()*9+1).toFixed(1),()=>(Math.random()*9+1).toFixed(2),()=>(Math.random()*900+100).toFixed(2),()=>(Math.random()*0.9+0.1).toFixed(1),()=>(Math.random()*0.09+0.01).toFixed(2),()=>(Math.random()*0.009+0.001).toFixed(3),()=>(Math.floor(Math.random()*9000+1000)+Math.random()).toFixed(2)];const s=styles[Math.floor(Math.random()*styles.length)]();highlightedPlace=null;setNumber(parseFloat(s));enteredStr=s}
+window.toggleHighlight=function(pi){highlightedPlace=(highlightedPlace===pi)?null:pi;renderNum();render()};
 
-    const H_COLOR='#3b82f6';
-    const T_COLOR='#f59e0b';
-    const O_COLOR='#ef4444';
-    const GHOST='#d4d4d8', GHOST_LIGHT='#e8e8ea';
+// ═══════════════════════════════════════════
+// DRAWING PRIMITIVES
+// ═══════════════════════════════════════════
+function iso(ctx,x,y,u,col){if(u<0.8)return;const d=u*DEP;ctx.fillStyle=col;ctx.fillRect(x,y,u,u);ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+d,y-d);ctx.lineTo(x+u+d,y-d);ctx.lineTo(x+u,y);ctx.closePath();ctx.fillStyle=cs(col,45);ctx.fill();ctx.beginPath();ctx.moveTo(x+u,y);ctx.lineTo(x+u+d,y-d);ctx.lineTo(x+u+d,y+u-d);ctx.lineTo(x+u,y+u);ctx.closePath();ctx.fillStyle=cs(col,-40);ctx.fill();if(u>3){ctx.strokeStyle=cs(col,-60);ctx.lineWidth=Math.max(.3,u*.012);ctx.strokeRect(x,y,u,u);ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+d,y-d);ctx.lineTo(x+u+d,y-d);ctx.lineTo(x+u,y);ctx.stroke();ctx.beginPath();ctx.moveTo(x+u,y);ctx.lineTo(x+u+d,y-d);ctx.lineTo(x+u+d,y+u-d);ctx.lineTo(x+u,y+u);ctx.stroke()}if(u>6){ctx.fillStyle='rgba(255,255,255,.18)';ctx.fillRect(x+.5,y+.5,u*.2,u*.2)}}
 
-    const N = 10;
-    const GAP_RATIO = 0.25;
-    const DEPTH_RATIO = 0.35;
+// Ghost containers
+const GF='rgba(180,190,200,0.12)',GS='rgba(160,170,180,0.35)',GT='rgba(200,210,220,0.15)',GR='rgba(140,150,160,0.18)';
+function ghostCubeCol(ctx,cx,cy,u){const sL=stickLen(u),d=u*DEP,lw=Math.max(.5,u*.025);ctx.fillStyle=GF;ctx.fillRect(cx,cy,u,sL);ctx.strokeStyle=GS;ctx.lineWidth=lw;ctx.strokeRect(cx,cy,u,sL);ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(cx+d,cy-d);ctx.lineTo(cx+u+d,cy-d);ctx.lineTo(cx+u,cy);ctx.closePath();ctx.fillStyle=GT;ctx.fill();ctx.strokeStyle=GS;ctx.stroke();ctx.beginPath();ctx.moveTo(cx+u,cy);ctx.lineTo(cx+u+d,cy-d);ctx.lineTo(cx+u+d,cy+sL-d);ctx.lineTo(cx+u,cy+sL);ctx.closePath();ctx.fillStyle=GR;ctx.fill();ctx.strokeStyle=GS;ctx.stroke()}
+function ghostStickGrid(ctx,cx,cy,u){const sL=stickLen(u),d=u*DEP,lw=Math.max(.5,u*.025);ctx.fillStyle=GF;ctx.fillRect(cx,cy,sL,sL);ctx.strokeStyle=GS;ctx.lineWidth=lw;ctx.strokeRect(cx,cy,sL,sL);ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(cx+d,cy-d);ctx.lineTo(cx+sL+d,cy-d);ctx.lineTo(cx+sL,cy);ctx.closePath();ctx.fillStyle=GT;ctx.fill();ctx.strokeStyle=GS;ctx.stroke();ctx.beginPath();ctx.moveTo(cx+sL,cy);ctx.lineTo(cx+sL+d,cy-d);ctx.lineTo(cx+sL+d,cy+sL-d);ctx.lineTo(cx+sL,cy+sL);ctx.closePath();ctx.fillStyle=GR;ctx.fill();ctx.strokeStyle=GS;ctx.stroke()}
+function ghostFlatCube(ctx,cx,cy,u){const sL=stickLen(u),d=u*DEP,ds=d*0.6,tdx=ds*N,tdy=ds*N,lw=Math.max(.5,u*.025);ctx.fillStyle=GF;ctx.fillRect(cx+tdx,cy-tdy,sL,sL);ctx.strokeStyle=GS;ctx.lineWidth=lw;ctx.strokeRect(cx+tdx,cy-tdy,sL,sL);ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(cx+tdx,cy-tdy);ctx.lineTo(cx+sL+tdx,cy-tdy);ctx.lineTo(cx+sL,cy);ctx.closePath();ctx.fillStyle=GT;ctx.fill();ctx.strokeStyle=GS;ctx.stroke();ctx.beginPath();ctx.moveTo(cx+sL,cy);ctx.lineTo(cx+sL+tdx,cy-tdy);ctx.lineTo(cx+sL+tdx,cy+sL-tdy);ctx.lineTo(cx+sL,cy+sL);ctx.closePath();ctx.fillStyle=GR;ctx.fill();ctx.strokeStyle=GS;ctx.stroke();ctx.fillStyle=GF;ctx.fillRect(cx,cy,sL,sL);ctx.strokeStyle=GS;ctx.lineWidth=lw;ctx.strokeRect(cx,cy,sL,sL)}
 
-    function rand3() {
-      const h=Math.floor(Math.random()*9)+1,t=Math.floor(Math.random()*10),o=Math.floor(Math.random()*10);
-      return(t===0&&o===0)?h*100+Math.floor(Math.random()*9)+1:h*100+t*10+o;
+// ═══════════════════════════════════════════
+// DRAW PLACE
+// ═══════════════════════════════════════════
+function drawPlace(ctx,ox,oy,pi,cW,H,zoom){
+  const p=P[pi],cnt=digits[pi],col=p.color,u=unitForPlace(pi);if(u<0.3)return;
+  const step=u*(1+GAP),d=u*DEP,sL=stickLen(u),ds=d*0.6;
+  const cx=ox,floor=oy+H-2,cy=floor-sL;
+  const headerY=cy-ds*N-d-u*1.5,hsz=u*1.2;
+
+  // Highlight column glow
+  if(highlightedPlace===pi&&cnt>0){
+    const a=0.08+0.04*Math.sin(pulsePhase);
+    const dims2=secDims(u,p.shape);
+    ctx.save();ctx.fillStyle=`rgba(148,163,184,${a})`;ctx.strokeStyle=`rgba(100,116,139,${a+0.15})`;
+    ctx.lineWidth=Math.max(1,u*0.06);
+    const hLeft=cx-u*0.3,hWidth=dims2.w+u*0.6;
+    const hTop=headerY-hsz-u*0.8,hHeight=floor-hTop;
+    ctx.fillRect(hLeft,hTop,hWidth,hHeight);ctx.strokeRect(hLeft,hTop,hWidth,hHeight);ctx.restore();
+  }
+
+  // Header
+  if(hsz*zoom>3){ctx.font=`900 ${hsz}px Nunito`;ctx.fillStyle=col;ctx.textAlign='left';ctx.textBaseline='bottom';ctx.fillText(p.name,ox,headerY)}
+
+  if(p.shape==='cube'){
+    if(u>1)ghostCubeCol(ctx,cx,cy,u);
+    for(let i=N-1;i>=0;i--){const y=cy+bp(i,u),slot=N-1-i;if(slot<cnt)iso(ctx,cx,y,u,col)}
+    if(showLabels&&cnt>0&&u*zoom>2){const fsz=u*0.4;for(let i=0;i<N;i++){const y=cy+bp(i,u),slot=N-1-i;if(slot<cnt){ctx.font=`900 ${fsz}px Nunito`;ctx.fillStyle=col;ctx.textAlign='left';ctx.textBaseline='middle';ctx.fillText(fv((slot+1)*Math.pow(10,p.exp)),cx+u+u*DEP+u*0.1,y+u/2)}}}
+  }else if(p.shape==='stick'){
+    if(u>1)ghostStickGrid(ctx,cx,cy,u);
+    for(let c=0;c<N;c++){const x=cx+bp(c,u);if(c<cnt){for(let r=N-1;r>=0;r--)iso(ctx,x,cy+bp(r,u),u,col)}}
+    if(showLabels&&cnt>0&&u*zoom>2){const fsz=u*0.8;for(let c=0;c<cnt;c++){ctx.save();ctx.translate(cx+bp(c,u)+u*0.5,floor+u*0.3);ctx.rotate(Math.PI/4);ctx.font=`700 ${fsz}px Nunito`;ctx.fillStyle=col;ctx.textAlign='left';ctx.textBaseline='middle';ctx.fillText(fv((c+1)*Math.pow(10,p.exp)),0,0);ctx.restore()}}
+  }else{
+    const adjCy=floor-sL;
+    if(u>1)ghostFlatCube(ctx,cx,adjCy,u);
+    for(let fl=0;fl<N;fl++){const fx=cx+fl*step;if(fl<cnt){for(let la=N-1;la>=0;la--){const lx=fx+ds*la,ly=adjCy-ds*la;for(let r=N-1;r>=0;r--)iso(ctx,lx,ly+bp(r,u),u,col)}}}
+    if(showLabels&&cnt>0&&u*zoom>2){const fsz=u*0.8;for(let fl=0;fl<cnt;fl++){ctx.save();ctx.translate(cx+fl*step+u*0.5,floor+u*0.3);ctx.rotate(Math.PI/4);ctx.font=`700 ${fsz}px Nunito`;ctx.fillStyle=col;ctx.textAlign='left';ctx.textBaseline='middle';ctx.fillText(fv((fl+1)*Math.pow(10,p.exp)),0,0);ctx.restore()}}
+  }
+}
+
+// ═══════════════════════════════════════════
+// RENDER — single clean function
+// ═══════════════════════════════════════════
+function render(){
+  const vpEl=document.getElementById('vp'),cv=document.getElementById('cv');
+  const W=vpEl.clientWidth,H=vpEl.clientHeight,dpr=window.devicePixelRatio||1;
+  cv.width=W*dpr;cv.height=H*dpr;cv.style.width=W+'px';cv.style.height=H+'px';
+  const ctx=cv.getContext('2d');ctx.scale(dpr,dpr);ctx.clearRect(0,0,W,H);
+  const vcx=W/2,floorY=H-FLOOR_Y_OFFSET;
+
+  // Floor
+  ctx.strokeStyle='#cbd5e1';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(0,floorY);ctx.lineTo(W,floorY);ctx.stroke();
+  const grad=ctx.createLinearGradient(0,floorY,0,floorY+30);grad.addColorStop(0,'rgba(0,0,0,0.04)');grad.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=grad;ctx.fillRect(0,floorY,W,30);
+
+  // Draw places (respects decimal toggle inline)
+  const end=showDecimals?NP:DEC;
+  for(let i=0;i<end;i++){
+    const wx=worldX(i),cw=colW(i),sx=wx*zoomLvl-panX+vcx,sw=cw*zoomLvl;
+    if(sx+sw<-200||sx>W+200)continue;
+    ctx.save();ctx.translate(sx,0);ctx.scale(zoomLvl,zoomLvl);
+    drawPlace(ctx,0,0,i,cw,floorY/zoomLvl,zoomLvl);ctx.restore();
+  }
+
+  // Decimal point (only when decimals visible)
+  if(showDecimals){
+    const onesU=unitForPlace(ONES)*zoomLvl,onesX=worldX(ONES)*zoomLvl-panX+vcx;
+    const onesW2=secDims(unitForPlace(ONES),P[ONES].shape).w*zoomLvl,dotR=onesU*0.35;
+    const decX=onesX+onesW2+onesU*0.5+dotR*1.5;
+    if(decX>-40&&decX<W+40){ctx.beginPath();ctx.arc(decX,floorY-dotR-1,dotR,0,Math.PI*2);ctx.fillStyle='#1e293b';ctx.fill()}
+  }
+}
+
+// ═══════════════════════════════════════════
+// NUMBER DISPLAY — single clean function
+// ═══════════════════════════════════════════
+function renderNum(){
+  const disp=document.getElementById('numDisplay'),inp=document.getElementById('numInput');
+  let rawStr;
+  if(showZeros){
+    const whole=String(parseInt(digits.slice(0,7).join(''))||0);
+    rawStr=showDecimals?addCommas(whole+'.'+digits.slice(7).join('')):addCommas(whole);
+  }else{
+    rawStr=(!showDecimals&&enteredStr.includes('.'))?addCommas(enteredStr.split('.')[0]):addCommas(enteredStr);
+  }
+  if(document.activeElement!==inp)inp.value=rawStr;
+
+  // Build clickable digit spans
+  let html='';const parts=rawStr.split('.'),wholePart=parts[0],decPart=parts[1]||'';
+  const wholeLen=wholePart.replace(/,/g,'').length;let ci=ONES-wholeLen+1;
+  for(let i=0;i<wholePart.length;i++){
+    const ch=wholePart[i];
+    if(ch===','){html+='<span style="color:#94a3b8">,</span>';continue}
+    const pi=ci++;
+    if(pi>=0&&pi<=6){const hi=highlightedPlace===pi;html+=`<span class="digit" style="background:${hi?P[pi].color:'transparent'};color:${hi?'#fff':'inherit'}" onclick="toggleHighlight(${pi})">${ch}</span>`}
+    else html+=`<span>${ch}</span>`;
+  }
+  if(decPart&&showDecimals){
+    html+='<span style="color:#94a3b8">.</span>';let di=DEC;
+    for(let i=0;i<decPart.length;i++){
+      if(di<=9){const hi=highlightedPlace===di;html+=`<span class="digit" style="background:${hi?P[di].color:'transparent'};color:${hi?'#fff':'inherit'}" onclick="toggleHighlight(${di})">${decPart[i]}</span>`;di++}
+      else html+=`<span>${decPart[i]}</span>`;
     }
-    function decompose(n){return{h:Math.floor(n/100),t:Math.floor((n%100)/10),o:n%10};}
+  }
+  disp.innerHTML=html;
+}
 
-    function getBlockSize() {
-      return 30;
-    }
+// ═══════════════════════════════════════════
+// INPUT HANDLERS
+// ═══════════════════════════════════════════
+const vpEl=document.getElementById('vp');
+vpEl.addEventListener('wheel',e=>{e.preventDefault();const delta=-e.deltaY*0.002,oldZ=zoomLvl;zoomLvl=Math.max(ZOOM_MIN,Math.min(ZOOM_MAX,zoomLvl*(1+delta)));const rect=vpEl.getBoundingClientRect(),mx=e.clientX-rect.left,vcx=vpEl.clientWidth/2;panX=(mx-vcx+panX)/oldZ*zoomLvl-(mx-vcx);render();document.getElementById('hint').classList.add('gone')},{passive:false});
 
-    const LABEL_FONT_SIZE = 13; // ~10pt
+let drag=false,dsx=0,dsp=0;
+vpEl.addEventListener('mousedown',e=>{drag=true;dsx=e.pageX;dsp=panX;document.getElementById('hint').classList.add('gone')});
+window.addEventListener('mousemove',e=>{if(!drag)return;panX=dsp-(e.pageX-dsx);render()});
+window.addEventListener('mouseup',()=>drag=false);
 
-    function initCanvas(cv, w, h) {
-      const dpr = window.devicePixelRatio||1;
-      cv.width=w*dpr; cv.height=h*dpr;
-      cv.style.width=w+'px'; cv.style.height=h+'px';
-      const ctx=cv.getContext('2d'); ctx.scale(dpr,dpr);
-      ctx.clearRect(0,0,w,h); return ctx;
-    }
+let tsx=0,tsp=0,lastPD=0,pinching=false;
+function tDist(e){const dx=e.touches[0].pageX-e.touches[1].pageX,dy=e.touches[0].pageY-e.touches[1].pageY;return Math.sqrt(dx*dx+dy*dy)}
+vpEl.addEventListener('touchstart',e=>{e.preventDefault();document.getElementById('hint').classList.add('gone');if(e.touches.length===2){pinching=true;lastPD=tDist(e)}else if(e.touches.length===1){pinching=false;tsx=e.touches[0].pageX;tsp=panX}},{passive:false});
+vpEl.addEventListener('touchmove',e=>{e.preventDefault();if(e.touches.length===2&&pinching){const dist=tDist(e),mid=(e.touches[0].pageX+e.touches[1].pageX)/2,scale=dist/lastPD,oldZ=zoomLvl;zoomLvl=Math.max(ZOOM_MIN,Math.min(ZOOM_MAX,zoomLvl*scale));const rect=vpEl.getBoundingClientRect(),mx=mid-rect.left,vcx=vpEl.clientWidth/2;panX=(mx-vcx+panX)/oldZ*zoomLvl-(mx-vcx);lastPD=dist;render()}else if(e.touches.length===1&&!pinching){panX=tsp-(e.touches[0].pageX-tsx);render()}},{passive:false});
+vpEl.addEventListener('touchend',e=>{if(e.touches.length<2)pinching=false;if(e.touches.length===1){tsx=e.touches[0].pageX;tsp=panX}});
 
-    function blockPos(i, blk) { return i * blk * (1 + GAP_RATIO); }
+// Buttons
+document.getElementById('newBtn').addEventListener('click',()=>{rand();renderNum();render()});
+document.getElementById('lblBtn').addEventListener('click',()=>{showLabels=!showLabels;document.getElementById('lblBtn').classList.toggle('on',showLabels);render()});
+document.getElementById('zeroBtn').addEventListener('click',()=>{showZeros=!showZeros;document.getElementById('zeroBtn').classList.toggle('on',showZeros);renderNum()});
+document.getElementById('decBtn').addEventListener('click',()=>{showDecimals=!showDecimals;document.getElementById('decBtn').classList.toggle('on',showDecimals);if(!showDecimals&&highlightedPlace!==null&&highlightedPlace>=DEC)highlightedPlace=null;renderNum();render()});
+document.getElementById('numInput').addEventListener('keydown',e=>{if(e.key!=='Enter')return;const raw=e.target.value.replace(/,/g,'').trim();if(!raw)return;const n=parseFloat(raw);if(isNaN(n)||n<0||n>=1e7)return;highlightedPlace=null;setNumber(n);enteredStr=raw;e.target.blur();renderNum();render()});
 
-    function colorShift(hex, amount) {
-      let r = parseInt(hex.slice(1,3),16);
-      let g = parseInt(hex.slice(3,5),16);
-      let b = parseInt(hex.slice(5,7),16);
-      r = Math.min(255, Math.max(0, r + amount));
-      g = Math.min(255, Math.max(0, g + amount));
-      b = Math.min(255, Math.max(0, b + amount));
-      return `rgb(${r},${g},${b})`;
-    }
+// ═══════════════════════════════════════════
+// LESSON OVERLAY
+// ═══════════════════════════════════════════
+function showLesson(){
+  let ov=document.getElementById('lessonOverlay');if(ov){ov.remove();return}
+  ov=document.createElement('div');ov.id='lessonOverlay';
+  ov.style.cssText='position:fixed;top:0;left:0;right:0;bottom:0;z-index:100;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;padding:20px;';
+  const box=document.createElement('div');
+  box.style.cssText='background:#fff;border-radius:16px;max-width:600px;width:100%;max-height:85vh;overflow-y:auto;padding:28px 24px;font-family:Nunito,sans-serif;box-shadow:0 20px 60px rgba(0,0,0,0.3);';
+  box.innerHTML=`<h1 style="font-size:22px;font-weight:900;color:#6366f1;margin-bottom:12px">🧱 Welcome to the Place Value Visualizer!</h1>
+<h2 style="font-size:16px;font-weight:900;color:#1e293b;margin:16px 0 8px">What is Place Value?</h2>
+<p style="font-size:14px;color:#374151;line-height:1.6;margin-bottom:12px">Every digit in a number has a <strong>value</strong> based on its <strong>position</strong>. The digit 3 means different things depending on where it sits:</p>
+<ul style="font-size:14px;color:#374151;line-height:1.8;margin-left:20px;margin-bottom:12px">
+<li>In <strong>300</strong>, the 3 means three <span style="color:#8b5cf6;font-weight:900">hundreds</span></li>
+<li>In <strong>30</strong>, the 3 means three <span style="color:#0d9488;font-weight:900">tens</span></li>
+<li>In <strong>3</strong>, the 3 means three <span style="color:#22c55e;font-weight:900">ones</span></li></ul>
+<h2 style="font-size:16px;font-weight:900;color:#1e293b;margin:16px 0 8px">The Blocks</h2>
+<p style="font-size:14px;color:#374151;line-height:1.6;margin-bottom:12px">This tool shows numbers using base-10 blocks — just like the ones in class!</p>
+<ul style="font-size:14px;color:#374151;line-height:1.8;margin-left:20px;margin-bottom:12px">
+<li>A small <strong>cube</strong> = 1 one</li><li>A <strong>stick</strong> (10 cubes) = 1 ten</li>
+<li>A <strong>flat</strong> (10 sticks) = 1 hundred</li><li>A big <strong>cube</strong> (10 flats) = 1 thousand</li></ul>
+<p style="font-size:14px;color:#374151;line-height:1.6;margin-bottom:12px">10 of anything always makes 1 of the next bigger thing!</p>
+<h2 style="font-size:16px;font-weight:900;color:#1e293b;margin:16px 0 8px">How to Use</h2>
+<ul style="font-size:14px;color:#374151;line-height:1.8;margin-left:20px;margin-bottom:12px">
+<li><strong>Type a number</strong> and press Enter</li><li><strong>Click a digit</strong> to highlight its blocks</li>
+<li><strong>Drag</strong> to see bigger or smaller places</li><li><strong>Scroll/pinch</strong> to zoom</li>
+<li><strong>Labels</strong> shows the value of each block</li><li><strong>Decimals</strong> reveals tenths, hundredths, thousandths</li></ul>
+<h2 style="font-size:16px;font-weight:900;color:#1e293b;margin:16px 0 8px">The Key Idea 💡</h2>
+<p style="font-size:14px;color:#374151;line-height:1.6;margin-bottom:12px">The ghost outline shows what <strong>10 of those blocks</strong> would look like — that is exactly <strong>one block in the next place to the left</strong>. Fill up 10, regroup into the next place!</p>
+<div style="text-align:center;margin-top:20px"><button onclick="document.getElementById('lessonOverlay').remove()" style="background:#6366f1;color:#fff;border:none;padding:12px 32px;border-radius:10px;font-size:16px;font-weight:900;font-family:Nunito;cursor:pointer">Got it — let me explore! 🚀</button></div>`;
+  ov.appendChild(box);ov.addEventListener('click',e=>{if(e.target===ov)ov.remove()});document.body.appendChild(ov);
+}
+document.getElementById('lessonBtn').addEventListener('click',showLesson);
 
-    // ═══════════════════════════════════════════
-    // ISOMETRIC CUBE — depth goes UP-RIGHT
-    // ═══════════════════════════════════════════
-    function drawIsoCube(ctx, x, y, size, color) {
-      const d = size * DEPTH_RATIO;
-
-      // Front face
-      ctx.beginPath();
-      ctx.rect(x, y, size, size);
-      ctx.fillStyle = color;
-      ctx.fill();
-
-      // Top face (lighter) — parallelogram up-right
-      ctx.beginPath();
-      ctx.moveTo(x, y);
-      ctx.lineTo(x + d, y - d);
-      ctx.lineTo(x + size + d, y - d);
-      ctx.lineTo(x + size, y);
-      ctx.closePath();
-      ctx.fillStyle = colorShift(color, 45);
-      ctx.fill();
-
-      // Right face (darker) — parallelogram up-right
-      ctx.beginPath();
-      ctx.moveTo(x + size, y);
-      ctx.lineTo(x + size + d, y - d);
-      ctx.lineTo(x + size + d, y + size - d);
-      ctx.lineTo(x + size, y + size);
-      ctx.closePath();
-      ctx.fillStyle = colorShift(color, -40);
-      ctx.fill();
-
-      // Edges
-      ctx.strokeStyle = colorShift(color, -60);
-      ctx.lineWidth = 0.5;
-      ctx.beginPath(); ctx.rect(x, y, size, size); ctx.stroke();
-      ctx.beginPath();
-      ctx.moveTo(x, y); ctx.lineTo(x+d, y-d); ctx.lineTo(x+size+d, y-d); ctx.lineTo(x+size, y);
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.moveTo(x+size, y); ctx.lineTo(x+size+d, y-d); ctx.lineTo(x+size+d, y+size-d); ctx.lineTo(x+size, y+size);
-      ctx.stroke();
-
-      // Highlight
-      ctx.fillStyle = 'rgba(255,255,255,0.22)';
-      ctx.fillRect(x + 1.5, y + 1.5, size * 0.3, size * 0.3);
-    }
-
-    function drawBlockOutline(ctx, x, y, size, color) {
-      ctx.beginPath(); ctx.rect(x, y, size, size);
-      ctx.strokeStyle = color; ctx.lineWidth = 1;
-      ctx.setLineDash([2,2]); ctx.stroke(); ctx.setLineDash([]);
-    }
-
-    // ═══════════════════
-    // ONES: column, labels on right
-    // ═══════════════════
-    function drawOnes(count, blk) {
-      const cv = document.getElementById('cvOnes');
-      const step = blk * (1 + GAP_RATIO);
-      const rodH = step * (N-1) + blk;
-      const d = blk * DEPTH_RATIO;
-      const pad = 6;
-      const labelW = showLabels ? 30 : 0;
-      const cw = blk + d + pad*2 + labelW;
-      const ch = rodH + d + pad*2;
-      const ctx = initCanvas(cv, cw, ch);
-
-      const ox = pad;
-      const oy = pad + d;
-
-      ctx.beginPath();
-      ctx.rect(ox - 2, oy - 2, blk + 4, rodH + 4);
-      ctx.strokeStyle = GHOST; ctx.lineWidth = 1.5;
-      ctx.setLineDash([4,3]); ctx.stroke(); ctx.setLineDash([]);
-
-      for(let i = 0; i < N; i++) {
-        const y = oy + blockPos(i, blk);
-        const slot = N - 1 - i;
-        if(slot < count) {
-          drawIsoCube(ctx, ox, y, blk, O_COLOR);
-          if(showLabels) {
-            ctx.font = `900 ${LABEL_FONT_SIZE}px Nunito`;
-            ctx.fillStyle = O_COLOR;
-            ctx.textAlign = 'left';
-            ctx.textBaseline = 'middle';
-            ctx.fillText(slot + 1, ox + blk + d + 4, y + blk/2);
-          }
-        } else {
-          drawBlockOutline(ctx, ox, y, blk, GHOST_LIGHT);
-        }
-      }
-    }
-
-    // ═══════════════════
-    // TENS: 10×10 grid, labels under columns
-    // ═══════════════════
-    function drawTens(count, blk) {
-      const cv = document.getElementById('cvTens');
-      const step = blk * (1 + GAP_RATIO);
-      const gridPx = step * (N-1) + blk;
-      const d = blk * DEPTH_RATIO;
-      const pad = 8;
-      const labelH = showLabels ? 20 : 0;
-      const cw = gridPx + d + pad*2;
-      const ch = gridPx + d + pad*2 + labelH;
-      const ctx = initCanvas(cv, cw, ch);
-
-      const ox = pad;
-      const oy = pad + d;
-
-      ctx.beginPath();
-      ctx.rect(ox - 3, oy - 3, gridPx + 6, gridPx + 6);
-      ctx.strokeStyle = GHOST; ctx.lineWidth = 1.5;
-      ctx.setLineDash([4,3]); ctx.stroke(); ctx.setLineDash([]);
-
-      for(let col = 0; col < N; col++) {
-        const x = ox + blockPos(col, blk);
-        const filled = col < count;
-
-        for(let row = 0; row < N; row++) {
-          const y = oy + blockPos(row, blk);
-          if(filled) {
-            drawIsoCube(ctx, x, y, blk, T_COLOR);
-          } else {
-            drawBlockOutline(ctx, x, y, blk, GHOST_LIGHT);
-          }
-        }
-
-        if(filled && showLabels) {
-          ctx.font = `900 ${LABEL_FONT_SIZE}px Nunito`;
-          ctx.fillStyle = T_COLOR;
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'top';
-          ctx.fillText((col+1)*10, x + blk/2, oy + gridPx + 6);
-        }
-      }
-    }
-
-    // ═══════════════════
-    // HUNDREDS: isometric cube-of-cubes
-    // Flats on y/z axes, stacking left-to-right along x
-    // Spaced like tens columns (same step), depth layers go up-right
-    // ═══════════════════
-    function drawHundreds(count, blk) {
-      const cv = document.getElementById('cvHundreds');
-      const step = blk * (1 + GAP_RATIO); // same spacing as tens columns
-      const d = blk * DEPTH_RATIO;
-
-      // Front face of one flat: 1 block wide × 10 blocks tall
-      const colH = step * (N-1) + blk;
-
-      // Depth per layer — visible enough to clearly show 10 layers
-      const depthStep = d * 0.7;
-      const totalDepthX = depthStep * N;
-      const totalDepthY = depthStep * N;
-
-      // Flats are spaced exactly like tens columns: step apart
-      const totalW = step * (N-1) + blk + totalDepthX + d;
-
-      const pad = 10;
-      const labelH = showLabels ? 20 : 0;
-      const cw = totalW + pad*2;
-      const ch = colH + totalDepthY + d + pad*2 + labelH;
-      const ctx = initCanvas(cv, cw, ch);
-
-      const oy = pad + totalDepthY + d; // top of front faces
-
-      for(let flat = 0; flat < N; flat++) {
-        const fx = pad + flat * step; // same spacing as tens!
-        const filled = flat < count;
-
-        if(filled) {
-          // Draw 10 depth layers back-to-front
-          for(let layer = N-1; layer >= 0; layer--) {
-            const lx = fx + depthStep * layer;
-            const ly = oy - depthStep * layer;
-            for(let row = 0; row < N; row++) {
-              drawIsoCube(ctx, lx, ly + blockPos(row, blk), blk, H_COLOR);
-            }
-          }
-        } else {
-          // Ghost: just the front column outline
-          for(let row = 0; row < N; row++) {
-            drawBlockOutline(ctx, fx, oy + blockPos(row, blk), blk, GHOST_LIGHT);
-          }
-        }
-
-        // Label directly under the front block
-        if(filled && showLabels) {
-          ctx.font = `900 ${LABEL_FONT_SIZE}px Nunito`;
-          ctx.fillStyle = H_COLOR;
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'top';
-          ctx.fillText((flat+1)*100, fx + blk/2, oy + colH + 6);
-        }
-      }
-    }
-
-    function renderViz(h, t, o) {
-      const blk = getBlockSize();
-      drawOnes(o, blk);
-      drawTens(t, blk);
-      drawHundreds(h, blk);
-    }
-
-    function renderNumber(n, forQuiz) {
-      const sec=document.getElementById('numberSection');
-      sec.innerHTML='';
-      if(forQuiz){
-        const inp=document.createElement('input');
-        inp.id='quizInput';inp.type='text';inp.placeholder='???';
-        inp.maxLength=3;inp.inputMode='numeric';
-        inp.addEventListener('keydown',e=>{if(e.key==='Enter')checkIdentify();});
-        const btn=document.createElement('button');
-        btn.id='quizCheck';btn.textContent='Check';
-        btn.addEventListener('click',checkIdentify);
-        const fb=document.createElement('span');fb.id='quizFeedback';
-        sec.appendChild(inp);sec.appendChild(btn);sec.appendChild(fb);
-        setTimeout(()=>inp.focus(),100);
-        return;
-      }
-      const{h,t,o}=decompose(n);
-      [{v:h,c:'hundreds'},{v:t,c:'tens'},{v:o,c:'ones'}].forEach(d=>{
-        const col=document.createElement('div');col.className='num-col';
-        const dig=document.createElement('div');dig.className=`num-digit ${d.c}`;dig.textContent=d.v;
-        const lbl=document.createElement('div');lbl.className='num-label';
-        lbl.style.color=`var(--${d.c.charAt(0)}-color)`;lbl.textContent=d.c;
-        col.appendChild(dig);col.appendChild(lbl);sec.appendChild(col);
-      });
-    }
-
-    function startExplore(){
-      mode='explore';target=rand3();
-      document.getElementById('buildControls').classList.remove('active');
-      document.getElementById('scoreBar').classList.remove('active');
-      renderNumber(target,false);
-      const{h,t,o}=decompose(target);renderViz(h,t,o);
-    }
-    function startIdentify(){
-      mode='identify';target=rand3();
-      document.getElementById('buildControls').classList.remove('active');
-      document.getElementById('scoreBar').classList.add('active');updateScore();
-      renderNumber(target,true);
-      const{h,t,o}=decompose(target);renderViz(h,t,o);
-    }
-    function startBuild(){
-      mode='build';target=rand3();bH=0;bT=0;bO=0;
-      document.getElementById('buildControls').classList.add('active');
-      document.getElementById('scoreBar').classList.add('active');updateScore();
-      renderNumber(target,false);renderViz(0,0,0);
-    }
-    function checkIdentify(){
-      const inp=document.getElementById('quizInput');
-      const fb=document.getElementById('quizFeedback');
-      const guess=parseInt(inp.value);if(isNaN(guess))return;
-      attempts++;
-      if(guess===target){
-        score++;inp.classList.add('correct');
-        fb.textContent='✓';fb.style.color='var(--success)';updateScore();
-        setTimeout(()=>{inp.classList.remove('correct');startIdentify();},1200);
-      }else{
-        inp.classList.add('wrong');
-        fb.textContent='✗';fb.style.color='#ef4444';updateScore();
-        setTimeout(()=>{inp.classList.remove('wrong');fb.textContent='';inp.value='';inp.focus();},1000);
-      }
-    }
-    function checkBuild(){
-      if(bH*100+bT*10+bO===target){
-        score++;attempts++;updateScore();
-        document.getElementById('vizArea').style.background='#f0fdf4';
-        setTimeout(()=>{document.getElementById('vizArea').style.background='';startBuild();},1000);
-      }
-    }
-    function updateScore(){
-      document.getElementById('scoreBar').textContent=attempts===0?'Try your best!':`${score} correct out of ${attempts}`;
-    }
-
-    // Labels toggle
-    document.getElementById('labelBtn').addEventListener('click',()=>{
-      showLabels = !showLabels;
-      document.getElementById('labelBtn').classList.toggle('active', showLabels);
-      if(mode==='build') renderViz(bH,bT,bO);
-      else { const{h,t,o}=decompose(target); renderViz(h,t,o); }
-    });
-
-    document.querySelectorAll('.mode-tab').forEach(tab=>{
-      tab.addEventListener('click',()=>{
-        document.querySelectorAll('.mode-tab').forEach(t=>t.classList.remove('active'));
-        tab.classList.add('active');score=0;attempts=0;
-        const m=tab.dataset.mode;
-        if(m==='explore')startExplore();else if(m==='identify')startIdentify();else startBuild();
-      });
-    });
-    document.getElementById('newBtn').addEventListener('click',()=>{
-      if(mode==='explore')startExplore();else if(mode==='identify')startIdentify();else startBuild();
-    });
-    document.querySelectorAll('.build-btn,.build-mini').forEach(btn=>{
-      btn.addEventListener('click',()=>{
-        if(mode!=='build')return;
-        const p=btn.dataset.place,d=parseInt(btn.dataset.dir);
-        if(p==='h')bH=Math.max(0,Math.min(9,bH+d));
-        else if(p==='t')bT=Math.max(0,Math.min(9,bT+d));
-        else bO=Math.max(0,Math.min(9,bO+d));
-        renderViz(bH,bT,bO);checkBuild();
-      });
-    });
-    document.getElementById('numberSection').addEventListener('click',()=>{
-      if(mode!=='explore')return;
-      const num=prompt('Enter a number (1–999):');
-      if(!num)return;const n=parseInt(num);
-      if(isNaN(n)||n<1||n>999)return;
-      target=n;renderNumber(n,false);
-      const{h,t,o}=decompose(n);renderViz(h,t,o);
-    });
-
-    let rT;
-    window.addEventListener('resize',()=>{
-      clearTimeout(rT);
-      rT=setTimeout(()=>{
-        if(mode==='build')renderViz(bH,bT,bO);
-        else{const{h,t,o}=decompose(target);renderViz(h,t,o);}
-      },100);
-    });
-
-    startExplore();
-  </script>
+// ═══════════════════════════════════════════
+// PULSE + INIT
+// ═══════════════════════════════════════════
+function pulseLoop(){if(highlightedPlace!==null){pulsePhase+=0.05;render()}requestAnimationFrame(pulseLoop)}
+window.addEventListener('resize',()=>render());
+rand();renderNum();
+requestAnimationFrame(()=>{render();setTimeout(()=>document.getElementById('hint').classList.add('gone'),5000);showLesson();pulseLoop()});
+</script>
 </body>
 </html>
