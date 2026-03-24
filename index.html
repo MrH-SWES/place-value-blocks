@@ -39,13 +39,14 @@
 <div id="vp"><canvas id="cv"></canvas><div id="hint">drag to pan · scroll to zoom · click a digit to highlight</div></div>
 <script>
 // ═══════════════════════════════════════════
-// PLACES
+// PLACES — extended to trillions
 // ═══════════════════════════════════════════
 const CC=['#ef4444','#3b82f6','#22c55e','#f59e0b','#8b5cf6','#0d9488'];
-const NAMES=['Millions','Hundred-Thousands','Ten-Thousands','Thousands','Hundreds','Tens','Ones','Tenths','Hundredths','Thousandths'];
-const SHAPES=['cube','flat','stick','cube','flat','stick','cube','flat','stick','cube'];
-const DEC=7,ONES=6,NP=10;
-const P=NAMES.map((n,i)=>({name:n,color:CC[i%6],shape:SHAPES[i],exp:6-i}));
+const NAMES=['Trillions','Hundred-Billions','Ten-Billions','Billions','Hundred-Millions','Ten-Millions','Millions','Hundred-Thousands','Ten-Thousands','Thousands','Hundreds','Tens','Ones','Tenths','Hundredths','Thousandths'];
+const SHAPES=['cube','flat','stick','cube','flat','stick','cube','flat','stick','cube','flat','stick','cube','flat','stick','cube'];
+// DEC = index of first decimal place, ONES = index of ones place, NP = total places
+const DEC=13,ONES=12,NP=16;
+const P=NAMES.map((n,i)=>({name:n,color:CC[i%6],shape:SHAPES[i],exp:12-i}));
 
 // ═══════════════════════════════════════════
 // STATE
@@ -64,17 +65,56 @@ function bp(i,u){return i*u*(1+GAP)}
 function stickLen(u){return bp(N-1,u)+u}
 function fv(v){if(Math.abs(v)>=1)return String(Math.round(v)).replace(/\B(?=(\d{3})+(?!\d))/g,',');if(v===0)return'0';const d=Math.max(1,Math.round(-Math.log10(Math.abs(v))));return String(parseFloat((Math.round(v*Math.pow(10,d))/Math.pow(10,d)).toFixed(d+1)))}
 function addCommas(s){const p=s.split('.');let wf='',w=(p[0]||'0').split('').reverse();for(let i=0;i<w.length;i++){if(i>0&&i%3===0)wf=','+wf;wf=w[i]+wf}return p[1]!==undefined?wf+'.'+p[1]:wf}
-function unitForPlace(pi){const z=U*zoomLvl,sL=stickLen(z),e=P[pi].exp;if(e>=0&&e<=2)return z;if(e>=3&&e<=5)return sL;if(e===6)return stickLen(sL);if(e>=-3&&e<=-1)return z/(sL/z);return z}
+function unitForPlace(pi){const z=U*zoomLvl,sL=stickLen(z),e=P[pi].exp;if(e>=0&&e<=2)return z;if(e>=3&&e<=5)return sL;if(e>=6&&e<=8)return stickLen(sL);if(e>=9&&e<=11)return stickLen(stickLen(sL));if(e===12)return stickLen(stickLen(stickLen(sL)));if(e>=-3&&e<=-1)return z/(sL/z);return z}
 function secDims(u,shape){const sL=stickLen(u),d=u*DEP,ds=d*0.6;if(shape==='cube')return{w:u+d,h:sL+d};if(shape==='stick')return{w:sL+d,h:sL+d};return{w:sL+ds*N+d,h:sL+ds*N+d}}
 function getDEC_GAP(){return unitForPlace(ONES)*0.75}
 function colW(pi){const u=unitForPlace(pi),dims=secDims(u,P[pi].shape);return dims.w+Math.max(P[pi].shape==='cube'?u*3:u*0.5,30)}
 function worldX(pi){let x=0;if(pi<ONES){for(let i=ONES-1;i>=pi;i--){x-=colW(i);if(i===DEC)x-=getDEC_GAP()}}else if(pi>ONES){for(let i=ONES+1;i<=pi;i++){x+=colW(i-1);if(i===DEC)x+=getDEC_GAP()}}return x}
 
 // ═══════════════════════════════════════════
-// NUMBER MANAGEMENT
+// NUMBER MANAGEMENT — supports up to trillions
 // ═══════════════════════════════════════════
-function setNumber(n){const w=Math.floor(n),f=Math.round((n-w)*1000);digits[0]=Math.floor(w/1e6)%10;digits[1]=Math.floor(w/1e5)%10;digits[2]=Math.floor(w/1e4)%10;digits[3]=Math.floor(w/1e3)%10;digits[4]=Math.floor(w/100)%10;digits[5]=Math.floor(w/10)%10;digits[6]=w%10;digits[7]=Math.floor(f/100)%10;digits[8]=Math.floor(f/10)%10;digits[9]=f%10;enteredStr=String(n)}
-function rand(){const styles=[()=>String(Math.floor(Math.random()*9+1)),()=>String(Math.floor(Math.random()*90+10)),()=>String(Math.floor(Math.random()*900+100)),()=>String(Math.floor(Math.random()*9000+1000)),()=>String(Math.floor(Math.random()*90000+10000)),()=>String(Math.floor(Math.random()*900000+100000)),()=>String(Math.floor(Math.random()*9000000+1000000)),()=>(Math.random()*9+1).toFixed(1),()=>(Math.random()*9+1).toFixed(2),()=>(Math.random()*900+100).toFixed(2),()=>(Math.random()*0.9+0.1).toFixed(1),()=>(Math.random()*0.09+0.01).toFixed(2),()=>(Math.random()*0.009+0.001).toFixed(3),()=>(Math.floor(Math.random()*9000+1000)+Math.random()).toFixed(2)];const s=styles[Math.floor(Math.random()*styles.length)]();highlightedPlace=null;setNumber(parseFloat(s));enteredStr=s}
+function setNumber(n){
+  const w=Math.floor(n),f=Math.round((n-w)*1000);
+  digits[0]=Math.floor(w/1e12)%10;
+  digits[1]=Math.floor(w/1e11)%10;
+  digits[2]=Math.floor(w/1e10)%10;
+  digits[3]=Math.floor(w/1e9)%10;
+  digits[4]=Math.floor(w/1e8)%10;
+  digits[5]=Math.floor(w/1e7)%10;
+  digits[6]=Math.floor(w/1e6)%10;
+  digits[7]=Math.floor(w/1e5)%10;
+  digits[8]=Math.floor(w/1e4)%10;
+  digits[9]=Math.floor(w/1e3)%10;
+  digits[10]=Math.floor(w/100)%10;
+  digits[11]=Math.floor(w/10)%10;
+  digits[12]=w%10;
+  digits[13]=Math.floor(f/100)%10;
+  digits[14]=Math.floor(f/10)%10;
+  digits[15]=f%10;
+  enteredStr=String(n);
+}
+function rand(){
+  const styles=[
+    ()=>String(Math.floor(Math.random()*9+1)),
+    ()=>String(Math.floor(Math.random()*90+10)),
+    ()=>String(Math.floor(Math.random()*900+100)),
+    ()=>String(Math.floor(Math.random()*9000+1000)),
+    ()=>String(Math.floor(Math.random()*90000+10000)),
+    ()=>String(Math.floor(Math.random()*900000+100000)),
+    ()=>String(Math.floor(Math.random()*9000000+1000000)),
+    ()=>String(Math.floor(Math.random()*9e9+1e9)),
+    ()=>String(Math.floor(Math.random()*9e11+1e11)),
+    ()=>(Math.random()*9+1).toFixed(1),
+    ()=>(Math.random()*9+1).toFixed(2),
+    ()=>(Math.random()*900+100).toFixed(2),
+    ()=>(Math.random()*0.9+0.1).toFixed(1),
+    ()=>(Math.random()*0.09+0.01).toFixed(2),
+    ()=>(Math.floor(Math.random()*9000+1000)+Math.random()).toFixed(2)
+  ];
+  const s=styles[Math.floor(Math.random()*styles.length)]();
+  highlightedPlace=null;setNumber(parseFloat(s));enteredStr=s;
+}
 window.toggleHighlight=function(pi){highlightedPlace=(highlightedPlace===pi)?null:pi;renderNum();render()};
 
 // ═══════════════════════════════════════════
@@ -89,24 +129,13 @@ function ghostStickGrid(ctx,cx,cy,u){const sL=stickLen(u),d=u*DEP,lw=Math.max(.5
 function ghostFlatCube(ctx,cx,cy,u){const sL=stickLen(u),d=u*DEP,ds=d*0.6,tdx=ds*N,tdy=ds*N,lw=Math.max(.5,u*.025);ctx.fillStyle=GF;ctx.fillRect(cx+tdx,cy-tdy,sL,sL);ctx.strokeStyle=GS;ctx.lineWidth=lw;ctx.strokeRect(cx+tdx,cy-tdy,sL,sL);ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(cx+tdx,cy-tdy);ctx.lineTo(cx+sL+tdx,cy-tdy);ctx.lineTo(cx+sL,cy);ctx.closePath();ctx.fillStyle=GT;ctx.fill();ctx.strokeStyle=GS;ctx.stroke();ctx.beginPath();ctx.moveTo(cx+sL,cy);ctx.lineTo(cx+sL+tdx,cy-tdy);ctx.lineTo(cx+sL+tdx,cy+sL-tdy);ctx.lineTo(cx+sL,cy+sL);ctx.closePath();ctx.fillStyle=GR;ctx.fill();ctx.strokeStyle=GS;ctx.stroke();ctx.fillStyle=GF;ctx.fillRect(cx,cy,sL,sL);ctx.strokeStyle=GS;ctx.lineWidth=lw;ctx.strokeRect(cx,cy,sL,sL)}
 
 // ═══════════════════════════════════════════
-// DRAW PLACE
+// DRAW PLACE — no highlight glow here (handled in render)
 // ═══════════════════════════════════════════
 function drawPlace(ctx,ox,oy,pi,cW,H,zoom){
   const p=P[pi],cnt=digits[pi],col=p.color,u=unitForPlace(pi);if(u<0.3)return;
   const step=u*(1+GAP),d=u*DEP,sL=stickLen(u),ds=d*0.6;
   const cx=ox,floor=oy+H-2,cy=floor-sL;
   const headerY=cy-ds*N-d-u*1.5,hsz=u*1.2;
-
-  // Highlight column glow
-  if(highlightedPlace===pi&&cnt>0){
-    const a=0.08+0.04*Math.sin(pulsePhase);
-    const dims2=secDims(u,p.shape);
-    ctx.save();ctx.fillStyle=`rgba(148,163,184,${a})`;ctx.strokeStyle=`rgba(100,116,139,${a+0.15})`;
-    ctx.lineWidth=Math.max(1,u*0.06);
-    const hLeft=cx-u*0.3,hWidth=dims2.w+u*0.6;
-    const hTop=headerY-hsz-u*0.8,hHeight=floor-hTop;
-    ctx.fillRect(hLeft,hTop,hWidth,hHeight);ctx.strokeRect(hLeft,hTop,hWidth,hHeight);ctx.restore();
-  }
 
   // Header
   if(hsz*zoom>3){ctx.font=`900 ${hsz}px Nunito`;ctx.fillStyle=col;ctx.textAlign='left';ctx.textBaseline='bottom';ctx.fillText(p.name,ox,headerY)}
@@ -128,7 +157,7 @@ function drawPlace(ctx,ox,oy,pi,cW,H,zoom){
 }
 
 // ═══════════════════════════════════════════
-// RENDER — single clean function
+// RENDER
 // ═══════════════════════════════════════════
 function render(){
   const vpEl=document.getElementById('vp'),cv=document.getElementById('cv');
@@ -137,11 +166,28 @@ function render(){
   const ctx=cv.getContext('2d');ctx.scale(dpr,dpr);ctx.clearRect(0,0,W,H);
   const vcx=W/2,floorY=H-FLOOR_Y_OFFSET;
 
+  // Full-height highlight column — drawn in screen space BEFORE blocks
+  if(highlightedPlace!==null){
+    const pi=highlightedPlace;
+    const wx=worldX(pi);
+    const cw=colW(pi);
+    // Column left edge in screen space
+    const sx=wx*zoomLvl-panX+vcx;
+    const sw=cw*zoomLvl;
+    // Only draw if on screen
+    if(sx+sw>0&&sx<W){
+      ctx.save();
+      ctx.fillStyle='rgba(255,250,150,0.45)';
+      ctx.fillRect(sx,0,sw*0.82,H);
+      ctx.restore();
+    }
+  }
+
   // Floor
   ctx.strokeStyle='#cbd5e1';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(0,floorY);ctx.lineTo(W,floorY);ctx.stroke();
   const grad=ctx.createLinearGradient(0,floorY,0,floorY+30);grad.addColorStop(0,'rgba(0,0,0,0.04)');grad.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=grad;ctx.fillRect(0,floorY,W,30);
 
-  // Draw places (respects decimal toggle inline)
+  // Draw places
   const end=showDecimals?NP:DEC;
   for(let i=0;i<end;i++){
     const wx=worldX(i),cw=colW(i),sx=wx*zoomLvl-panX+vcx,sw=cw*zoomLvl;
@@ -150,7 +196,7 @@ function render(){
     drawPlace(ctx,0,0,i,cw,floorY/zoomLvl,zoomLvl);ctx.restore();
   }
 
-  // Decimal point (only when decimals visible)
+  // Decimal point
   if(showDecimals){
     const onesU=unitForPlace(ONES)*zoomLvl,onesX=worldX(ONES)*zoomLvl-panX+vcx;
     const onesW2=secDims(unitForPlace(ONES),P[ONES].shape).w*zoomLvl,dotR=onesU*0.35;
@@ -160,33 +206,37 @@ function render(){
 }
 
 // ═══════════════════════════════════════════
-// NUMBER DISPLAY — single clean function
+// NUMBER DISPLAY
 // ═══════════════════════════════════════════
 function renderNum(){
   const disp=document.getElementById('numDisplay'),inp=document.getElementById('numInput');
   let rawStr;
   if(showZeros){
-    const whole=String(parseInt(digits.slice(0,7).join(''))||0);
-    rawStr=showDecimals?addCommas(whole+'.'+digits.slice(7).join('')):addCommas(whole);
+    const whole=String(parseInt(digits.slice(0,ONES+1).join(''))||0);
+    rawStr=showDecimals?addCommas(whole+'.'+digits.slice(ONES+1).join('')):addCommas(whole);
   }else{
     rawStr=(!showDecimals&&enteredStr.includes('.'))?addCommas(enteredStr.split('.')[0]):addCommas(enteredStr);
   }
   if(document.activeElement!==inp)inp.value=rawStr;
 
   // Build clickable digit spans
-  let html='';const parts=rawStr.split('.'),wholePart=parts[0],decPart=parts[1]||'';
-  const wholeLen=wholePart.replace(/,/g,'').length;let ci=ONES-wholeLen+1;
+  let html='';
+  const parts=rawStr.split('.'),wholePart=parts[0],decPart=parts[1]||'';
+  const wholeLen=wholePart.replace(/,/g,'').length;
+  let ci=ONES-wholeLen+1;
   for(let i=0;i<wholePart.length;i++){
     const ch=wholePart[i];
     if(ch===','){html+='<span style="color:#94a3b8">,</span>';continue}
     const pi=ci++;
-    if(pi>=0&&pi<=6){const hi=highlightedPlace===pi;html+=`<span class="digit" style="background:${hi?P[pi].color:'transparent'};color:${hi?'#fff':'inherit'}" onclick="toggleHighlight(${pi})">${ch}</span>`}
-    else html+=`<span>${ch}</span>`;
+    if(pi>=0&&pi<=ONES){
+      const hi=highlightedPlace===pi;
+      html+=`<span class="digit" style="background:${hi?P[pi].color:'transparent'};color:${hi?'#fff':'inherit'}" onclick="toggleHighlight(${pi})">${ch}</span>`;
+    }else html+=`<span>${ch}</span>`;
   }
   if(decPart&&showDecimals){
     html+='<span style="color:#94a3b8">.</span>';let di=DEC;
     for(let i=0;i<decPart.length;i++){
-      if(di<=9){const hi=highlightedPlace===di;html+=`<span class="digit" style="background:${hi?P[di].color:'transparent'};color:${hi?'#fff':'inherit'}" onclick="toggleHighlight(${di})">${decPart[i]}</span>`;di++}
+      if(di<=NP-1){const hi=highlightedPlace===di;html+=`<span class="digit" style="background:${hi?P[di].color:'transparent'};color:${hi?'#fff':'inherit'}" onclick="toggleHighlight(${di})">${decPart[i]}</span>`;di++}
       else html+=`<span>${decPart[i]}</span>`;
     }
   }
@@ -215,7 +265,7 @@ document.getElementById('newBtn').addEventListener('click',()=>{rand();renderNum
 document.getElementById('lblBtn').addEventListener('click',()=>{showLabels=!showLabels;document.getElementById('lblBtn').classList.toggle('on',showLabels);render()});
 document.getElementById('zeroBtn').addEventListener('click',()=>{showZeros=!showZeros;document.getElementById('zeroBtn').classList.toggle('on',showZeros);renderNum()});
 document.getElementById('decBtn').addEventListener('click',()=>{showDecimals=!showDecimals;document.getElementById('decBtn').classList.toggle('on',showDecimals);if(!showDecimals&&highlightedPlace!==null&&highlightedPlace>=DEC)highlightedPlace=null;renderNum();render()});
-document.getElementById('numInput').addEventListener('keydown',e=>{if(e.key!=='Enter')return;const raw=e.target.value.replace(/,/g,'').trim();if(!raw)return;const n=parseFloat(raw);if(isNaN(n)||n<0||n>=1e7)return;highlightedPlace=null;setNumber(n);enteredStr=raw;e.target.blur();renderNum();render()});
+document.getElementById('numInput').addEventListener('keydown',e=>{if(e.key!=='Enter')return;const raw=e.target.value.replace(/,/g,'').trim();if(!raw)return;const n=parseFloat(raw);if(isNaN(n)||n<0||n>=1e13)return;highlightedPlace=null;setNumber(n);enteredStr=raw;e.target.blur();renderNum();render()});
 
 // ═══════════════════════════════════════════
 // LESSON OVERLAY
@@ -230,6 +280,7 @@ function showLesson(){
 <h2 style="font-size:16px;font-weight:900;color:#1e293b;margin:16px 0 8px">What is Place Value?</h2>
 <p style="font-size:14px;color:#374151;line-height:1.6;margin-bottom:12px">Every digit in a number has a <strong>value</strong> based on its <strong>position</strong>. The digit 3 means different things depending on where it sits:</p>
 <ul style="font-size:14px;color:#374151;line-height:1.8;margin-left:20px;margin-bottom:12px">
+<li>In <strong>3,000,000,000</strong>, the 3 means three <span style="color:#ef4444;font-weight:900">billions</span></li>
 <li>In <strong>300</strong>, the 3 means three <span style="color:#8b5cf6;font-weight:900">hundreds</span></li>
 <li>In <strong>30</strong>, the 3 means three <span style="color:#0d9488;font-weight:900">tens</span></li>
 <li>In <strong>3</strong>, the 3 means three <span style="color:#22c55e;font-weight:900">ones</span></li></ul>
@@ -237,11 +288,12 @@ function showLesson(){
 <p style="font-size:14px;color:#374151;line-height:1.6;margin-bottom:12px">This tool shows numbers using base-10 blocks — just like the ones in class!</p>
 <ul style="font-size:14px;color:#374151;line-height:1.8;margin-left:20px;margin-bottom:12px">
 <li>A small <strong>cube</strong> = 1 one</li><li>A <strong>stick</strong> (10 cubes) = 1 ten</li>
-<li>A <strong>flat</strong> (10 sticks) = 1 hundred</li><li>A big <strong>cube</strong> (10 flats) = 1 thousand</li></ul>
+<li>A <strong>flat</strong> (10 sticks) = 1 hundred</li><li>A big <strong>cube</strong> (10 flats) = 1 thousand</li>
+<li>The pattern repeats all the way up to <strong>trillions</strong>!</li></ul>
 <p style="font-size:14px;color:#374151;line-height:1.6;margin-bottom:12px">10 of anything always makes 1 of the next bigger thing!</p>
 <h2 style="font-size:16px;font-weight:900;color:#1e293b;margin:16px 0 8px">How to Use</h2>
 <ul style="font-size:14px;color:#374151;line-height:1.8;margin-left:20px;margin-bottom:12px">
-<li><strong>Type a number</strong> and press Enter</li><li><strong>Click a digit</strong> to highlight its blocks</li>
+<li><strong>Type a number</strong> and press Enter (up to trillions!)</li><li><strong>Click a digit</strong> to highlight its entire column in yellow</li>
 <li><strong>Drag</strong> to see bigger or smaller places</li><li><strong>Scroll/pinch</strong> to zoom</li>
 <li><strong>Labels</strong> shows the value of each block</li><li><strong>Decimals</strong> reveals tenths, hundredths, thousandths</li></ul>
 <h2 style="font-size:16px;font-weight:900;color:#1e293b;margin:16px 0 8px">The Key Idea 💡</h2>
@@ -252,12 +304,11 @@ function showLesson(){
 document.getElementById('lessonBtn').addEventListener('click',showLesson);
 
 // ═══════════════════════════════════════════
-// PULSE + INIT
+// INIT
 // ═══════════════════════════════════════════
-function pulseLoop(){if(highlightedPlace!==null){pulsePhase+=0.05;render()}requestAnimationFrame(pulseLoop)}
 window.addEventListener('resize',()=>render());
 rand();renderNum();
-requestAnimationFrame(()=>{render();setTimeout(()=>document.getElementById('hint').classList.add('gone'),5000);showLesson();pulseLoop()});
+requestAnimationFrame(()=>{render();setTimeout(()=>document.getElementById('hint').classList.add('gone'),5000)});
 </script>
 </body>
 </html>
