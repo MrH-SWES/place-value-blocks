@@ -52,7 +52,7 @@
     <button class="ab divd" id="divBtn">÷10</button>
     <button class="ab divd" id="div100Btn">÷100</button>
     <button class="ab divd" id="div1000Btn">÷1000</button>
-    <button class="ab" id="decBtn">Decimals</button>
+    <button class="ab" id="lblBtn">Labels</button>
     <button class="ab" id="zeroBtn">Show Zeros</button>
     <button class="ab" id="newBtn">New Number</button>
   </div>
@@ -72,7 +72,7 @@
 </div>
 
 <script>
-// --- DATA ---
+// --- CORE GEOMETRY (Restored and Corrected) ---
 const CC=['#ef4444','#3b82f6','#22c55e','#f59e0b','#8b5cf6','#0d9488'];
 const NAMES=['Trillions','Hundred-Billions','Ten-Billions','Billions','Hundred-Millions','Ten-Millions','Millions','Hundred-Thousands','Ten-Thousands','Thousands','Hundreds','Tens','Ones','Tenths','Hundredths','Thousandths'];
 const SHAPES=['cube','flat','stick','cube','flat','stick','cube','flat','stick','cube','flat','stick','cube','flat','stick','cube'];
@@ -81,10 +81,9 @@ const P=NAMES.map((n,i)=>({name:n,color:CC[i%6],shape:SHAPES[i],exp:12-i}));
 const U=8, N=10, GAP=0.2, DEP=0.3, FLOOR_Y_OFFSET=120, ZOOM_MIN=0.01, ZOOM_MAX=100;
 
 let digits=Array(NP).fill(0);
-let showZeros=false, showDecimals=false;
+let showLabels=false, showZeros=false, showDecimals=false, trailingDot=false;
 let panX=0, zoomLvl=1.0, highlightedPlace=null, animating=false;
 
-// --- UTILS ---
 function cs(hex,a){let r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);return`rgb(${Math.min(255,Math.max(0,r+a))},${Math.min(255,Math.max(0,g+a))},${Math.min(255,Math.max(0,b+a))})`}
 function bp(i,u){return i*u*(1+GAP)}
 function stickLen(u){return bp(N-1,u)+u}
@@ -100,7 +99,6 @@ function unitForPlace(pi){
   if(e===12) return stickLen(stickLen(stickLen(sL)));
   return z;
 }
-
 function secDims(u,shape){const sL=stickLen(u),d=u*DEP,ds=d*0.6;if(shape==='cube')return{w:u+d,h:sL+d};if(shape==='stick')return{w:sL+d,h:sL+d};return{w:sL+ds*N+d,h:sL+ds*N+d}}
 function colW(pi){const u=unitForPlace(pi),dims=secDims(u,P[pi].shape);return dims.w+Math.max(P[pi].shape==='cube'?u*3:u*0.5,30)}
 
@@ -111,21 +109,31 @@ function worldX(pi){
   return x;
 }
 
+// --- DATA MGMT ---
 function setNumber(n){
   const w=Math.floor(n), f=Math.round((n-w)*1000);
   for(let i=0;i<13;i++) digits[i] = Math.floor(w / Math.pow(10, 12-i)) % 10;
   digits[13]=Math.floor(f/100)%10; digits[14]=Math.floor(f/10)%10; digits[15]=f%10;
+  checkDecimalVisibility();
+}
+
+function checkDecimalVisibility(){
+  showDecimals = (digits[13]+digits[14]+digits[15] > 0) || showZeros || trailingDot;
 }
 
 function digitsToStr(){
   let first=-1; for(let i=0;i<=ONES;i++)if(digits[i]>0){first=i;break}
-  let w=''; const start=first>=0?first:ONES; for(let i=start;i<=ONES;i++)w+=digits[i];
-  let d='', lastDec=-1; for(let i=DEC;i<NP;i++)if(digits[i]>0)lastDec=i;
-  if(lastDec>=0){for(let i=DEC;i<=lastDec;i++)d+=digits[i]; return w+'.'+d}
+  let w=''; const start=first>=0?first:ONES; for(let i=start; i<=ONES; i++) w += digits[i];
+  let d='', lastDec=-1; for(let i=DEC; i<NP; i++) if(digits[i]>0) lastDec=i;
+  if(lastDec>=0 || trailingDot){
+      const stop = lastDec>=0 ? lastDec : DEC;
+      for(let i=DEC; i<=stop; i++) d += digits[i];
+      return w+'.'+d;
+  }
   return w;
 }
 
-// --- RENDER ---
+// --- RENDER ENGINE ---
 function render(od){
   const vpEl=document.getElementById('vp'), cv=document.getElementById('cv');
   const W=vpEl.clientWidth, H=vpEl.clientHeight, dpr=window.devicePixelRatio||1;
@@ -133,19 +141,33 @@ function render(od){
   const ctx=cv.getContext('2d'); ctx.scale(dpr,dpr); ctx.clearRect(0,0,W,H);
   const vcx=W/2, floorY=H-FLOOR_Y_OFFSET;
 
-  if(highlightedPlace!==null){
-    const pi=highlightedPlace, wx=worldX(pi), cw=colW(pi), sx=wx-panX+vcx;
+  // VISIBILITY LOGIC: Find range of digits + 1 larger
+  let firstActive=ONES; for(let i=0; i<ONES; i++) if(digits[i]>0){ firstActive=i; break; }
+  let lastActive=ONES; for(let i=15; i>=DEC; i--) if(digits[i]>0){ lastActive=i; break; }
+
+  let start = showZeros ? 3 : Math.max(0, firstActive - 1);
+  let end = showZeros ? 15 : (showDecimals ? lastActive : ONES);
+
+  if(highlightedPlace!==null && highlightedPlace >= start && highlightedPlace <= end){
+    const pi=highlightedPlace, sx=worldX(pi)-panX+vcx, cw=colW(pi);
     ctx.fillStyle='rgba(255,250,150,0.45)'; ctx.fillRect(sx,0,cw*0.82,H);
   }
   
   ctx.strokeStyle='#cbd5e1'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(0,floorY); ctx.lineTo(W,floorY); ctx.stroke();
-  const end=showDecimals?NP:DEC;
-  for(let i=0;i<end;i++){
-    const wx=worldX(i), cw=colW(i), sx=wx-panX+vcx;
-    if(sx+cw<-400||sx>W+400)continue;
+  
+  for(let i=start; i<=end; i++){
+    const sx=worldX(i)-panX+vcx, cw=colW(i);
+    if(sx+cw<-200||sx>W+200)continue;
     ctx.save(); ctx.translate(sx,0);
     drawPlace(ctx,0,0,i,cw,floorY,od);
     ctx.restore();
+  }
+
+  // Decimal Point Dot
+  if(showDecimals){
+    const u=unitForPlace(ONES), x=worldX(ONES)-panX+vcx, w2=secDims(u,P[ONES].shape).w;
+    const dotR=u*0.35, decX=x+w2+u*0.5+dotR*1.5;
+    ctx.beginPath(); ctx.arc(decX,floorY-dotR-1,dotR,0,Math.PI*2); ctx.fillStyle='#1e293b'; ctx.fill();
   }
 }
 
@@ -156,7 +178,7 @@ function drawPlace(ctx,ox,oy,pi,cW,H,od){
   if(u*1.2>3){ctx.font=`900 ${u*1.2}px Nunito`;ctx.fillStyle=col;ctx.fillText(p.name,ox,cy-ds*N-d-u*1.5)}
 
   if(p.shape==='cube'){
-    if(u > 15){ // Macro check
+    if(P[pi].exp > 0 && P[pi].exp % 3 === 0){ // Thousands macro check
       if(u>1)for(let i=N-1;i>=0;i--)ghostMacroCube(ctx,cx,cy+bp(i,u),subU);
       for(let i=0;i<cnt;i++)isoMacroCube(ctx,cx,cy+bp(N-1-i,u),subU,col);
     } else {
@@ -189,11 +211,11 @@ function ghostMacroCube(ctx,bx,by,su){
   ctx.beginPath(); ctx.moveTo(bx+u,by); ctx.lineTo(bx+u+tdx,by-tdy); ctx.lineTo(bx+u+tdx,by+u-tdy); ctx.lineTo(bx+u,by+u); ctx.fillStyle=GR; ctx.fill(); ctx.stroke();
   ctx.fillStyle=GF; ctx.fillRect(bx,by,u,u); ctx.strokeRect(bx,by,u,u);
 }
-function ghostCubeCol(ctx,cx,cy,u){ctx.fillStyle=GF;ctx.fillRect(cx,cy,u,stickLen(u));ctx.strokeStyle=GS;ctx.strokeRect(cx,cy,u,stickLen(u))}
-function ghostStickGrid(ctx,cx,cy,u){ctx.fillStyle=GF;ctx.fillRect(cx,cy,stickLen(u),stickLen(u));ctx.strokeStyle=GS;ctx.strokeRect(cx,cy,stickLen(u),stickLen(u))}
-function ghostFlatCube(ctx,cx,cy,u){ctx.fillStyle=GF;ctx.fillRect(cx,cy,stickLen(u),stickLen(u));ctx.strokeStyle=GS;ctx.strokeRect(cx,cy,stickLen(u),stickLen(u))}
+function ghostCubeCol(ctx,cx,cy,u){const sL=stickLen(u);ctx.fillStyle=GF;ctx.fillRect(cx,cy,u,sL);ctx.strokeStyle=GS;ctx.strokeRect(cx,cy,u,sL)}
+function ghostStickGrid(ctx,cx,cy,u){const sL=stickLen(u);ctx.fillStyle=GF;ctx.fillRect(cx,cy,sL,sL);ctx.strokeStyle=GS;ctx.strokeRect(cx,cy,sL,sL)}
+function ghostFlatCube(ctx,cx,cy,u){const sL=stickLen(u);ctx.fillStyle=GF;ctx.fillRect(cx,cy,sL,sL);ctx.strokeStyle=GS;ctx.strokeRect(cx,cy,sL,sL)}
 
-// --- ANIMATION ---
+// --- ANIMATION ENGINE ---
 async function animateShift(dir){
   const vpEl=document.getElementById('vp'), acv=document.getElementById('animCanvas'), dpr=window.devicePixelRatio||1;
   acv.width=vpEl.clientWidth*dpr; acv.height=vpEl.clientHeight*dpr; acv.style.width=vpEl.clientWidth+'px'; acv.style.height=vpEl.clientHeight+'px';
@@ -215,8 +237,7 @@ async function animateShift(dir){
   document.getElementById('animStatus').classList.remove('show');
   if(dir==='left'){const nd=Array(NP).fill(0);for(let i=1;i<NP;i++)nd[i-1]=digits[i];digits=[...nd]}
   else{const nd=Array(NP).fill(0);for(let i=0;i<NP-1;i++)nd[i+1]=digits[i];digits=[...nd]}
-  if(dir==='right' && (digits[13]+digits[14]+digits[15]>0)){showDecimals=true; document.getElementById('decBtn').classList.add('on')}
-  render(); renderNum(); updatePMBar();
+  checkDecimalVisibility(); render(); renderNum(); updatePMBar();
 }
 
 function animateTransition(ctx,W,floorY,sp,dp,cnt){
@@ -249,45 +270,66 @@ async function runMultiShift(type, steps){
   animating=false; updatePMBar();
 }
 
-// --- IDENTITY PROOF LOGIC ---
+// --- UI SYNC ---
 function renderNum(){
   const disp=document.getElementById('numDisplay'), inp=document.getElementById('numInput');
   
-  // Find standard bounds
   let firstIdx=ONES; for(let i=0; i<ONES; i++) if(digits[i]>0){ firstIdx=i; break; }
   let lastDec=-1; for(let i=15; i>=DEC; i--) if(digits[i]>0){ lastDec=i; break; }
 
-  // Apply Show Zeros spread
-  let start = showZeros ? Math.min(3, firstIdx) : firstIdx;
+  let start = showZeros ? 3 : firstIdx;
   let end = showZeros ? 15 : lastDec;
 
-  let rawWhole = "";
-  for(let i=start; i<=ONES; i++) rawWhole += digits[i];
-  let wholeF = addCommas(rawWhole);
-
-  let decF = "";
-  if(showDecimals && end >= DEC){
-    decF = ".";
-    for(let i=DEC; i<=end; i++) decF += digits[i];
+  let wholeF = addCommas(digits.slice(start, ONES+1).join(""));
+  
+  let decPart = "";
+  if(showDecimals){
+    decPart = ".";
+    const stop = showZeros ? 15 : Math.max(DEC, lastDec);
+    for(let i=DEC; i<=stop; i++) decPart += digits[i];
   }
 
-  const final = wholeF + decF;
-  if(document.activeElement!==inp) inp.value = final;
+  const finalStr = wholeF + decPart;
+  if(document.activeElement!==inp) inp.value = finalStr;
 
   let html = "";
-  let cur = start;
+  let curDigitIdx = start;
   for(let ch of wholeF){
     if(ch===","){ html += '<span style="color:#94a3b8">,</span>'; continue; }
-    const pi=cur++; html += `<span class="digit" style="background:${highlightedPlace===pi?P[pi].color:'transparent'};color:${highlightedPlace===pi?'#fff':'inherit'}" onclick="window.toggleHighlight(${pi})">${ch}</span>`;
+    const pi=curDigitIdx++; html += `<span class="digit" style="background:${highlightedPlace===pi?P[pi].color:'transparent'};color:${highlightedPlace===pi?'#fff':'inherit'}" onclick="window.toggleHighlight(${pi})">${ch}</span>`;
   }
-  if(decF){
+  if(decPart){
     html += '<span style="color:#94a3b8">.</span>';
-    for(let i=0; i<decF.length-1; i++){
-      const pi=DEC+i; html += `<span class="digit" style="background:${highlightedPlace===pi?P[pi].color:'transparent'};color:${highlightedPlace===pi?'#fff':'inherit'}" onclick="window.toggleHighlight(${pi})">${decF[i+1]}</span>`;
+    for(let i=0; i<decPart.length-1; i++){
+      const pi=DEC+i; html += `<span class="digit" style="background:${highlightedPlace===pi?P[pi].color:'transparent'};color:${highlightedPlace===pi?'#fff':'inherit'}" onclick="window.toggleHighlight(${pi})">${decPart[i+1]}</span>`;
     }
   }
   disp.innerHTML = html;
 }
+
+function updatePMBar(){
+  const bar=document.getElementById('pmBar'), end=showDecimals?NP:DEC;
+  let h=''; 
+  // Determine visible range for PM Bar based on digits
+  let first=ONES; for(let i=0; i<ONES; i++) if(digits[i]>0){ first=i; break; }
+  let last=ONES; for(let i=15; i>=DEC; i--) if(digits[i]>0){ last=i; break; }
+  
+  let start = Math.max(0, first - 1);
+  let stop = Math.min(NP - 1, (showDecimals ? last : ONES) + 1);
+
+  for(let i=start; i<=stop; i++){
+    const col=P[i].color;
+    h+=`<div class="pm-grp">
+      <button class="pm-btn" style="color:${col};border-color:${col}" onclick="window.inc(${i})">+</button>
+      <span class="pm-lbl" style="color:${col}">${P[i].name.slice(0,5)}</span>
+      <button class="pm-btn" style="color:${col};border-color:${col}" onclick="window.dec(${i})">−</button>
+    </div>`;
+  }
+  bar.innerHTML=h;
+}
+
+window.inc=(i)=>{if(digits[i]<9){digits[i]++}else if(i>0){digits[i]=0;digits[i-1]++}checkDecimalVisibility();renderNum();render();updatePMBar()};
+window.dec=(i)=>{if(digits[i]>0){digits[i]--}else if(i>0&&digits[i-1]>0){digits[i-1]--;digits[i]=9}checkDecimalVisibility();renderNum();render();updatePMBar()};
 
 // --- EVENTS ---
 document.getElementById('multBtn').onclick=()=>runMultiShift('mult',1);
@@ -298,20 +340,27 @@ document.getElementById('div100Btn').onclick=()=>runMultiShift('div',2);
 document.getElementById('div1000Btn').onclick=()=>runMultiShift('div',3);
 
 document.getElementById('resetBtn').onclick=()=>{
-  if(animating)return; digits=Array(NP).fill(0); highlightedPlace=null; setNumber(0);
+  digits=Array(NP).fill(0); highlightedPlace=null; trailingDot=false; setNumber(0);
   renderNum(); render(); updatePMBar(); document.getElementById('numInput').value=""; document.getElementById('numInput').focus();
 };
 
-document.getElementById('numInput').onkeydown=(e)=>{
-  if(e.key!=='Enter')return;
-  const raw = e.target.value.replace(/,/g,'');
-  if(raw.includes('.')){ showDecimals=true; document.getElementById('decBtn').classList.add('on'); }
-  setNumber(parseFloat(raw) || 0); e.target.blur(); renderNum(); render(); updatePMBar();
+document.getElementById('numInput').oninput=(e)=>{
+  const val = e.target.value;
+  trailingDot = val.endsWith(".");
+  const n = parseFloat(val.replace(/,/g,''));
+  if(!isNaN(n)){
+    setNumber(n);
+    renderNum(); render(); updatePMBar();
+  }
 };
 
-document.getElementById('decBtn').onclick=function(){showDecimals=!showDecimals;this.classList.toggle('on',showDecimals);renderNum();render();updatePMBar()};
-document.getElementById('zeroBtn').onclick=function(){showZeros=!showZeros;this.classList.toggle('on',showZeros);renderNum();updatePMBar()};
-document.getElementById('newBtn').onclick=()=>{setNumber(Math.random()*100); renderNum(); render()};
+document.getElementById('numInput').onkeydown=(e)=>{
+  if(e.key==='Enter') e.target.blur();
+};
+
+document.getElementById('zeroBtn').onclick=function(){showZeros=!showZeros;this.classList.toggle('on',showZeros);checkDecimalVisibility();renderNum();render();updatePMBar()};
+document.getElementById('newBtn').onclick=()=>{setNumber(Math.random()*100); renderNum(); render(); updatePMBar()};
+document.getElementById('lblBtn').onclick=function(){showLabels=!showLabels;this.classList.toggle('on',showLabels);render()};
 
 const vp=document.getElementById('vp');
 vp.onwheel=(e)=>{e.preventDefault(); zoomLvl=Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, zoomLvl*(1-e.deltaY*0.001))); render()};
@@ -322,24 +371,8 @@ window.onmouseup=()=>dr=false;
 
 window.toggleHighlight=(pi)=>{highlightedPlace=(highlightedPlace===pi)?null:pi;renderNum();render()};
 
-function updatePMBar(){
-  const bar=document.getElementById('pmBar'), end=showDecimals?NP:DEC;
-  let h=''; for(let i=Math.max(0,ONES-2); i<Math.min(end,ONES+4); i++){
-    const col=P[i].color;
-    h+=`<div class="pm-grp">
-      <button class="pm-btn" style="color:${col};border-color:${col}" onclick="window.inc(${i})">+</button>
-      <span class="pm-lbl" style="color:${col}">${P[i].name.slice(0,5)}</span>
-      <button class="pm-btn" style="color:${col};border-color:${col}" onclick="window.dec(${i})">−</button>
-    </div>`;
-  }
-  bar.innerHTML=h;
-}
-window.inc=(i)=>{if(digits[i]<9){digits[i]++}else if(i>0){digits[i]=0;digits[i-1]++}renderNum();render();updatePMBar()};
-window.dec=(i)=>{if(digits[i]>0){digits[i]--}else if(i>0&&digits[i-1]>0){digits[i-1]--;digits[i]=9}renderNum();render();updatePMBar()};
-
 // Start
 setNumber(54.6);
-showDecimals=true; document.getElementById('decBtn').classList.add('on');
 renderNum(); render(); updatePMBar();
 </script>
 </body>
