@@ -234,7 +234,7 @@ function render(od){
   const grad=ctx.createLinearGradient(0,floorY,0,floorY+30);grad.addColorStop(0,'rgba(0,0,0,0.04)');grad.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=grad;ctx.fillRect(0,floorY,W,30);
   const end=showDecimals?NP:DEC;
   let start=0;
-  if(showZeros){start=3;}
+  if(showZeros){start=3;/* Billions – show all places from here */}
   else{for(start=0;start<end;start++)if(digits[start]>0)break;start=Math.max(0,start-1);}
   for(let i=start;i<end;i++){const wx=worldX(i),cw=colW(i),sx=wx*zoomLvl-panX+vcx,sw=cw*zoomLvl;if(sx+sw<-200||sx>W+200)continue;ctx.save();ctx.translate(sx,0);ctx.scale(zoomLvl,zoomLvl);drawPlace(ctx,0,0,i,cw,floorY/zoomLvl,zoomLvl,od);ctx.restore()}
   if(showDecimals){const onesU=unitForPlace(ONES)*zoomLvl,onesX=worldX(ONES)*zoomLvl-panX+vcx,onesW2=secDims(unitForPlace(ONES),P[ONES].shape).w*zoomLvl,dotR=onesU*0.35,decX=onesX+onesW2+onesU*0.5+dotR*1.5;if(decX>-40&&decX<W+40){ctx.beginPath();ctx.arc(decX,floorY-dotR-1,dotR,0,Math.PI*2);ctx.fillStyle='#1e293b';ctx.fill()}}
@@ -718,8 +718,8 @@ function updateMultDivBtns(){
 async function runMultiShift(type,steps){
   if(animating)return;animating=true;updateMultDivBtns();updatePMBar();
   for(let s=0;s<steps;s++){
-    if(type==='mult'){if(digits[0]>0)break;await animateMult10()}
-    else{if(digits[NP-1]>0)break;await animateDiv10()}
+    if(type==='mult'){if(!canMult(1))break;await animateMult10()}
+    else{if(!canDiv(1))break;await animateDiv10()}
     if(s<steps-1)await delay(100);
   }
   animating=false;updateMultDivBtns();updatePMBar();
