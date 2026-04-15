@@ -40,10 +40,12 @@
 <div id="topBar">
   <span style="font-size:13px;font-weight:900;color:#6366f1">Place Value Visualizer</span>
   <div class="btns">
+    <button class="ab mult" id="mult1000Btn">×1000</button>
+    <button class="ab mult" id="mult100Btn">×100</button>
     <button class="ab mult" id="multBtn">×10</button>
     <button class="ab divd" id="divBtn">÷10</button>
-    <button class="ab" id="lessonBtn">📖 Lesson</button>
-    <button class="ab" id="decBtn">Decimals</button>
+    <button class="ab divd" id="div100Btn">÷100</button>
+    <button class="ab divd" id="div1000Btn">÷1000</button>
     <button class="ab" id="lblBtn">Labels</button>
     <button class="ab" id="zeroBtn">Show Zeros</button>
     <button class="ab" id="newBtn">New Number</button>
@@ -68,7 +70,7 @@ const DEC=13,ONES=12,NP=16;
 const P=NAMES.map((n,i)=>({name:n,color:CC[i%6],shape:SHAPES[i],exp:12-i}));
 const U=8,N=10,GAP=0.2,DEP=0.3,FLOOR_Y_OFFSET=120,ZOOM_MIN=0.01,ZOOM_MAX=100;
 let digits=Array(NP).fill(0);
-let showLabels=false,showZeros=false,showDecimals=false;
+let showLabels=false,showZeros=false,showDecimals=false,trailingDot=false;
 let panX=0,zoomLvl=1.0,enteredStr='';
 let highlightedPlace=null,animating=false;
 
@@ -86,6 +88,9 @@ function screenX(pi){return worldX(pi)*zoomLvl-panX+document.getElementById('vp'
 function lerpColor(a,b,t){const r1=parseInt(a.slice(1,3),16),g1=parseInt(a.slice(3,5),16),b1=parseInt(a.slice(5,7),16),r2=parseInt(b.slice(1,3),16),g2=parseInt(b.slice(3,5),16),b2=parseInt(b.slice(5,7),16);const r=Math.round(r1+(r2-r1)*t),g=Math.round(g1+(g2-g1)*t),bl=Math.round(b1+(b2-b1)*t);return`#${r.toString(16).padStart(2,'0')}${g.toString(16).padStart(2,'0')}${bl.toString(16).padStart(2,'0')}`}
 
 // ═══════ NUMBER ═══════
+function checkDecimalVisibility(){
+  showDecimals = (digits[DEC]+digits[DEC+1]+digits[DEC+2] > 0) || showZeros || trailingDot;
+}
 function setNumber(n){
   const w=Math.floor(n),f=Math.round((n-w)*1000);
   digits[0]=Math.floor(w/1e12)%10;digits[1]=Math.floor(w/1e11)%10;digits[2]=Math.floor(w/1e10)%10;
@@ -94,18 +99,19 @@ function setNumber(n){
   digits[9]=Math.floor(w/1e3)%10;digits[10]=Math.floor(w/100)%10;digits[11]=Math.floor(w/10)%10;
   digits[12]=w%10;digits[13]=Math.floor(f/100)%10;digits[14]=Math.floor(f/10)%10;digits[15]=f%10;
   enteredStr=String(n);
+  checkDecimalVisibility();
 }
 function digitsToStr(){
   let first=-1;for(let i=0;i<=ONES;i++)if(digits[i]>0){first=i;break}
-  if(first<0&&digits[DEC]===0&&digits[DEC+1]===0&&digits[DEC+2]===0)return'0';
+  if(first<0&&digits[DEC]===0&&digits[DEC+1]===0&&digits[DEC+2]===0)return trailingDot?'0.':'0';
   let w='';const start=first>=0?first:ONES;for(let i=start;i<=ONES;i++)w+=digits[i];
   let d='',lastDec=-1;for(let i=DEC;i<NP;i++)if(digits[i]>0)lastDec=i;
-  if(lastDec>=0){for(let i=DEC;i<=lastDec;i++)d+=digits[i];return w+'.'+d}
+  if(lastDec>=0||trailingDot){const stop=lastDec>=0?lastDec:DEC;for(let i=DEC;i<=stop;i++)d+=digits[i];return w+'.'+d}
   return w;
 }
 function getNumericValue(){let v=0;for(let i=0;i<NP;i++)v+=digits[i]*Math.pow(10,P[i].exp);return parseFloat(v.toPrecision(15))}
-function shiftDigitsLeft(){const nd=Array(NP).fill(0);for(let i=1;i<NP;i++)nd[i-1]=digits[i];digits=[...nd];enteredStr=digitsToStr()}
-function shiftDigitsRight(){const nd=Array(NP).fill(0);for(let i=0;i<NP-1;i++)nd[i+1]=digits[i];digits=[...nd];enteredStr=digitsToStr()}
+function shiftDigitsLeft(){const nd=Array(NP).fill(0);for(let i=1;i<NP;i++)nd[i-1]=digits[i];digits=[...nd];enteredStr=digitsToStr();checkDecimalVisibility()}
+function shiftDigitsRight(){const nd=Array(NP).fill(0);for(let i=0;i<NP-1;i++)nd[i+1]=digits[i];digits=[...nd];enteredStr=digitsToStr();checkDecimalVisibility()}
 function rand(){
   const styles=[()=>String(Math.floor(Math.random()*9+1)),()=>String(Math.floor(Math.random()*90+10)),()=>String(Math.floor(Math.random()*900+100)),()=>String(Math.floor(Math.random()*9000+1000)),()=>String(Math.floor(Math.random()*90000+10000)),()=>String(Math.floor(Math.random()*900000+100000)),()=>String(Math.floor(Math.random()*9000000+1000000)),()=>(Math.random()*9+1).toFixed(1),()=>(Math.random()*9+1).toFixed(2),()=>(Math.random()*900+100).toFixed(2),()=>(Math.floor(Math.random()*9000+1000)+Math.random()).toFixed(2)];
   const s=styles[Math.floor(Math.random()*styles.length)]();
@@ -227,7 +233,10 @@ function render(od){
   ctx.strokeStyle='#cbd5e1';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(0,floorY);ctx.lineTo(W,floorY);ctx.stroke();
   const grad=ctx.createLinearGradient(0,floorY,0,floorY+30);grad.addColorStop(0,'rgba(0,0,0,0.04)');grad.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=grad;ctx.fillRect(0,floorY,W,30);
   const end=showDecimals?NP:DEC;
-  for(let i=0;i<end;i++){const wx=worldX(i),cw=colW(i),sx=wx*zoomLvl-panX+vcx,sw=cw*zoomLvl;if(sx+sw<-200||sx>W+200)continue;ctx.save();ctx.translate(sx,0);ctx.scale(zoomLvl,zoomLvl);drawPlace(ctx,0,0,i,cw,floorY/zoomLvl,zoomLvl,od);ctx.restore()}
+  let start=0;
+  if(showZeros){start=3;}
+  else{for(start=0;start<end;start++)if(digits[start]>0)break;start=Math.max(0,start-1);}
+  for(let i=start;i<end;i++){const wx=worldX(i),cw=colW(i),sx=wx*zoomLvl-panX+vcx,sw=cw*zoomLvl;if(sx+sw<-200||sx>W+200)continue;ctx.save();ctx.translate(sx,0);ctx.scale(zoomLvl,zoomLvl);drawPlace(ctx,0,0,i,cw,floorY/zoomLvl,zoomLvl,od);ctx.restore()}
   if(showDecimals){const onesU=unitForPlace(ONES)*zoomLvl,onesX=worldX(ONES)*zoomLvl-panX+vcx,onesW2=secDims(unitForPlace(ONES),P[ONES].shape).w*zoomLvl,dotR=onesU*0.35,decX=onesX+onesW2+onesU*0.5+dotR*1.5;if(decX>-40&&decX<W+40){ctx.beginPath();ctx.arc(decX,floorY-dotR-1,dotR,0,Math.PI*2);ctx.fillStyle='#1e293b';ctx.fill()}}
 }
 
@@ -611,7 +620,7 @@ async function animateDiv10(){
 // ═══════ +/- BUTTONS ═══════
 async function incrementPlace(pi){
   if(animating)return;
-  if(digits[pi]<9){digits[pi]++;enteredStr=digitsToStr();render();renderNum();updatePMBar();return}
+  if(digits[pi]<9){digits[pi]++;enteredStr=digitsToStr();checkDecimalVisibility();render();renderNum();updatePMBar();return}
   if(pi<=0)return;
   animating=true;updateMultDivBtns();updatePMBar();
   const{ctx,W,H,floorY}=setupAnimCanvas();
@@ -641,13 +650,13 @@ async function incrementPlace(pi){
   if(digits[pi-1]===9){
     await incrementPlace(pi-1);
   } else {
-    digits[pi-1]++;enteredStr=digitsToStr();render();renderNum();
+    digits[pi-1]++;enteredStr=digitsToStr();checkDecimalVisibility();render();renderNum();
     updateMultDivBtns();updatePMBar();
   }
 }
 async function decrementPlace(pi){
   if(animating)return;
-  if(digits[pi]>0){digits[pi]--;enteredStr=digitsToStr();render();renderNum();updatePMBar();return}
+  if(digits[pi]>0){digits[pi]--;enteredStr=digitsToStr();checkDecimalVisibility();render();renderNum();updatePMBar();return}
   if(pi<=0)return;
   let borrowedFromRecursion=false;
   if(digits[pi-1]<=0){
@@ -663,7 +672,7 @@ async function decrementPlace(pi){
   render();
   await animFullColumnBorrow(ctx,W,H,H-FLOOR_Y_OFFSET,pi-1,pi);
   ctx.clearRect(0,0,W,H);st.classList.remove('show');
-  digits[pi]=9;enteredStr=digitsToStr();render();renderNum();
+  digits[pi]=9;enteredStr=digitsToStr();checkDecimalVisibility();render();renderNum();
   animating=false;updateMultDivBtns();updatePMBar();
 }
 window.incrementPlace=incrementPlace;
@@ -696,11 +705,31 @@ function renderNum(){
 }
 
 // ═══════ CONTROLS ═══════
-function canMult(){for(let i=0;i<NP;i++)if(digits[i]>0&&i===0)return false;return getNumericValue()>0&&getNumericValue()<1e12}
-function canDiv(){for(let i=0;i<ONES;i++)if(digits[i]>0)return true;return false}
-function updateMultDivBtns(){document.getElementById('multBtn').disabled=animating||!canMult();document.getElementById('divBtn').disabled=animating||!canDiv()}
-document.getElementById('multBtn').addEventListener('click',async()=>{if(animating||!canMult())return;animating=true;updateMultDivBtns();updatePMBar();await animateMult10();animating=false;updateMultDivBtns();updatePMBar()});
-document.getElementById('divBtn').addEventListener('click',async()=>{if(animating||!canDiv())return;animating=true;updateMultDivBtns();updatePMBar();await animateDiv10();animating=false;updateMultDivBtns();updatePMBar()});
+function canMult(steps){steps=steps||1;for(let i=0;i<steps;i++)if(digits[i]>0)return false;return getNumericValue()>0&&getNumericValue()<1e12}
+function canDiv(steps){steps=steps||1;for(let i=NP-steps;i<NP;i++)if(digits[i]>0)return false;return getNumericValue()>0}
+function updateMultDivBtns(){
+  document.getElementById('multBtn').disabled=animating||!canMult(1);
+  document.getElementById('mult100Btn').disabled=animating||!canMult(2);
+  document.getElementById('mult1000Btn').disabled=animating||!canMult(3);
+  document.getElementById('divBtn').disabled=animating||!canDiv(1);
+  document.getElementById('div100Btn').disabled=animating||!canDiv(2);
+  document.getElementById('div1000Btn').disabled=animating||!canDiv(3);
+}
+async function runMultiShift(type,steps){
+  if(animating)return;animating=true;updateMultDivBtns();updatePMBar();
+  for(let s=0;s<steps;s++){
+    if(type==='mult'){if(digits[0]>0)break;await animateMult10()}
+    else{if(digits[NP-1]>0)break;await animateDiv10()}
+    if(s<steps-1)await delay(100);
+  }
+  animating=false;updateMultDivBtns();updatePMBar();
+}
+document.getElementById('multBtn').addEventListener('click',()=>runMultiShift('mult',1));
+document.getElementById('mult100Btn').addEventListener('click',()=>runMultiShift('mult',2));
+document.getElementById('mult1000Btn').addEventListener('click',()=>runMultiShift('mult',3));
+document.getElementById('divBtn').addEventListener('click',()=>runMultiShift('div',1));
+document.getElementById('div100Btn').addEventListener('click',()=>runMultiShift('div',2));
+document.getElementById('div1000Btn').addEventListener('click',()=>runMultiShift('div',3));
 const vpEl=document.getElementById('vp');
 vpEl.addEventListener('wheel',e=>{e.preventDefault();const delta=-e.deltaY*0.002,oldZ=zoomLvl;zoomLvl=Math.max(ZOOM_MIN,Math.min(ZOOM_MAX,zoomLvl*(1+delta)));const rect=vpEl.getBoundingClientRect(),mx=e.clientX-rect.left,vcx=vpEl.clientWidth/2;panX=(mx-vcx+panX)/oldZ*zoomLvl-(mx-vcx);render();document.getElementById('hint').classList.add('gone')},{passive:false});
 let drag=false,dsx=0,dsp=0;
@@ -714,18 +743,9 @@ vpEl.addEventListener('touchmove',e=>{if(e.target.closest('.pm-grp'))return;e.pr
 vpEl.addEventListener('touchend',e=>{if(e.touches.length<2)pinching=false;if(e.touches.length===1){tsx=e.touches[0].pageX;tsp=panX}});
 document.getElementById('newBtn').addEventListener('click',()=>{if(animating)return;rand();renderNum();render();updateMultDivBtns();updatePMBar()});
 document.getElementById('lblBtn').addEventListener('click',()=>{showLabels=!showLabels;document.getElementById('lblBtn').classList.toggle('on',showLabels);render()});
-document.getElementById('zeroBtn').addEventListener('click',()=>{showZeros=!showZeros;document.getElementById('zeroBtn').classList.toggle('on',showZeros);renderNum();updatePMBar()});
-document.getElementById('decBtn').addEventListener('click',()=>{showDecimals=!showDecimals;document.getElementById('decBtn').classList.toggle('on',showDecimals);if(!showDecimals&&highlightedPlace!==null&&highlightedPlace>=DEC)highlightedPlace=null;renderNum();render();updatePMBar()});
-document.getElementById('numInput').addEventListener('keydown',e=>{if(e.key!=='Enter')return;const raw=e.target.value.replace(/,/g,'').trim();if(!raw)return;const n=parseFloat(raw);if(isNaN(n)||n<0||n>=1e13)return;highlightedPlace=null;setNumber(n);enteredStr=raw;e.target.blur();renderNum();render();updateMultDivBtns();updatePMBar()});
-
-function showLesson(){
-  let ov=document.getElementById('lessonOverlay');if(ov){ov.remove();return}
-  ov=document.createElement('div');ov.id='lessonOverlay';ov.style.cssText='position:fixed;top:0;left:0;right:0;bottom:0;z-index:100;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;padding:20px;';
-  const box=document.createElement('div');box.style.cssText='background:#fff;border-radius:16px;max-width:600px;width:100%;max-height:85vh;overflow-y:auto;padding:28px 24px;font-family:Nunito,sans-serif;box-shadow:0 20px 60px rgba(0,0,0,0.3);';
-  box.innerHTML=`<h1 style="font-size:22px;font-weight:900;color:#6366f1;margin-bottom:12px">🧱 Place Value Visualizer</h1><p style="font-size:14px;color:#374151;line-height:1.6;margin-bottom:12px">Base-10 blocks show numbers visually. A <strong>cube</strong> = 1, a <strong>stick</strong> = 10, a <strong>flat</strong> = 100, and a big <strong>cube</strong> = 1,000. The pattern repeats!</p><p style="font-size:14px;color:#374151;line-height:1.6;margin-bottom:12px"><strong style="color:#22c55e">×10</strong> / <strong style="color:#f59e0b">÷10</strong> — watch blocks transform and cascade. <strong>+ / −</strong> — add or remove one block; carries and borrows happen automatically!</p><ul style="font-size:14px;color:#374151;line-height:1.8;margin-left:20px;margin-bottom:12px"><li><strong>Type a number</strong> and press Enter</li><li><strong>Click a digit</strong> to highlight</li><li><strong>Drag</strong> to pan · <strong>Scroll</strong> to zoom</li></ul><div style="text-align:center;margin-top:20px"><button onclick="document.getElementById('lessonOverlay').remove()" style="background:#6366f1;color:#fff;border:none;padding:12px 32px;border-radius:10px;font-size:16px;font-weight:900;font-family:Nunito;cursor:pointer">Got it! 🚀</button></div>`;
-  ov.appendChild(box);ov.addEventListener('click',e=>{if(e.target===ov)ov.remove()});document.body.appendChild(ov);
-}
-document.getElementById('lessonBtn').addEventListener('click',showLesson);
+document.getElementById('zeroBtn').addEventListener('click',()=>{showZeros=!showZeros;document.getElementById('zeroBtn').classList.toggle('on',showZeros);checkDecimalVisibility();renderNum();render();updatePMBar()});
+document.getElementById('numInput').addEventListener('input',e=>{const val=e.target.value;trailingDot=val.endsWith('.');const n=parseFloat(val.replace(/,/g,''));if(!isNaN(n)){highlightedPlace=null;setNumber(n);renderNum();render();updateMultDivBtns();updatePMBar()}});
+document.getElementById('numInput').addEventListener('keydown',e=>{if(e.key==='Enter')e.target.blur()});
 
 window.addEventListener('resize',()=>{render();updatePMBar()});
 rand();renderNum();updateMultDivBtns();updatePMBar();
