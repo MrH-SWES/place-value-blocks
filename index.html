@@ -63,11 +63,13 @@
   <div id="pmBar"></div>
 </div>
 <script>
-const CC=['#ef4444','#8b5cf6','#0d9488','#22c55e','#3b82f6','#f59e0b'];
+// 10 unique branded colors: Millions(pink) H-Thousands(violet) T-Thousands(teal) Thousands(green) Hundreds(blue) Tens(amber) Ones(red) Tenths(orange) Hundredths(cyan) Thousandths(purple)
+const BRANDED=['#ec4899','#8b5cf6','#0d9488','#22c55e','#3b82f6','#f59e0b','#ef4444','#f97316','#06b6d4','#a855f7'];
+const CC=[...BRANDED.slice(0,6),...BRANDED]; // indices 0-5 mirror Millions-period colors
 const NAMES=['Trillions','Hundred-Billions','Ten-Billions','Billions','Hundred-Millions','Ten-Millions','Millions','Hundred-Thousands','Ten-Thousands','Thousands','Hundreds','Tens','Ones','Tenths','Hundredths','Thousandths'];
 const SHAPES=['cube','flat','stick','cube','flat','stick','cube','flat','stick','cube','flat','stick','cube','flat','stick','cube'];
 const DEC=13,ONES=12,NP=16;
-const P=NAMES.map((n,i)=>({name:n,color:CC[i%6],shape:SHAPES[i],exp:12-i}));
+const P=NAMES.map((n,i)=>({name:n,color:CC[i],shape:SHAPES[i],exp:12-i}));
 const U=8,N=10,GAP=0.2,DEP=0.3,FLOOR_Y_OFFSET=120,ZOOM_MIN=0.01,ZOOM_MAX=100;
 let digits=Array(NP).fill(0);
 let showLabels=false,showZeros=false,showDecimals=false,trailingDot=false;
