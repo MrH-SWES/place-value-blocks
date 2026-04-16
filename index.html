@@ -189,13 +189,13 @@ function ghostMacroCube(ctx,bx,by,su){
 function drawPlace(ctx,ox,oy,pi,cW,H,zoom,od){
   const p=P[pi],cnt=(od||digits)[pi],col=p.color,u=unitForPlace(pi);if(u<0.3)return;
   // Sub-unit: the unit of the next smaller place. Used to draw macro-cubes as grids.
-  const subU=(pi<NP-1&&pi<ONES)?unitForPlace(pi+1):u;
+  const subU=(pi<NP-1&&(pi<ONES||(showDecimals&&pi===ONES)))?unitForPlace(pi+1):u;
   const step=u*(1+GAP),d=u*DEP,sL=stickLen(u),ds=d*0.6;
   const cx=ox,floor=oy+H-2,cy=floor-sL;
   const headerY=cy-ds*N-d-u*1.5,hsz=u*1.2;
   if(hsz*zoom>3){ctx.font=`900 ${hsz}px Nunito`;ctx.fillStyle=col;ctx.textAlign='left';ctx.textBaseline='bottom';ctx.fillText(p.name,ox,headerY)}
   if(p.shape==='cube'){
-    const isMacro=u>unitForPlace(ONES); // thousands and above use sub-cube grid
+    const isMacro=u>unitForPlace(ONES)||(showDecimals&&pi===ONES); // thousands and above use sub-cube grid; ones too when decimals shown
     if(isMacro){
       if(u>1){for(let i=N-1;i>=0;i--){const y=cy+bp(i,u),slot=N-1-i;ghostMacroCube(ctx,cx,y,subU);}}
       for(let i=0;i<N;i++){const y=cy+bp(i,u),slot=N-1-i;if(slot<cnt)isoMacroCube(ctx,cx,y,subU,col);}
@@ -365,7 +365,7 @@ function animFullColumnCarry(ctx,W,H,floorY,srcPi,dstPi){
     const sDs=sU*DEP*0.6;
     const DUR=2600;
     // Sub-unit for drawing the macro cube at the destination
-    const dstSubU=(dstPi<NP-1&&dstPi<ONES)?unitForPlace(dstPi+1):dU;
+    const dstSubU=(dstPi<NP-1&&(dstPi<ONES||(showDecimals&&dstPi===ONES)))?unitForPlace(dstPi+1):dU;
     return new Promise(res=>{
       const t0=performance.now();
       function f(now){
@@ -580,7 +580,8 @@ function animateTransition(ctx,W,H,floorY,srcPi,dstPi,cnt){
 async function animateMult10(){
   const{ctx,W,H,floorY}=setupAnimCanvas();
   const sd=[...digits],moves=[];
-  for(let i=0;i<=ONES;i++)if(sd[i]>0&&i>0)moves.push(i);
+  const end=showDecimals?NP:ONES+1;
+  for(let i=0;i<end;i++)if(sd[i]>0&&i>0)moves.push(i);
   let wd=[...sd];const st=document.getElementById('animStatus');
   for(let mi=0;mi<moves.length;mi++){
     const sp=moves[mi],dp=sp-1,cnt=sd[sp];
@@ -595,7 +596,8 @@ async function animateMult10(){
 async function animateDiv10(){
   const{ctx,W,H,floorY}=setupAnimCanvas();
   const sd=[...digits],moves=[];
-  for(let i=ONES;i>=0;i--)if(sd[i]>0&&i<ONES)moves.push(i);
+  const limit=showDecimals?NP-1:ONES;
+  for(let i=limit;i>=0;i--)if(sd[i]>0&&i<limit)moves.push(i);
   let wd=[...sd];const st=document.getElementById('animStatus');
   for(let mi=0;mi<moves.length;mi++){
     const sp=moves[mi],dp=sp+1,cnt=sd[sp];
@@ -697,7 +699,7 @@ function renderNum(){
 
 // ═══════ CONTROLS ═══════
 function canMult(){for(let i=0;i<NP;i++)if(digits[i]>0&&i===0)return false;return getNumericValue()>0&&getNumericValue()<1e12}
-function canDiv(){for(let i=0;i<ONES;i++)if(digits[i]>0)return true;return false}
+function canDiv(){if(showDecimals){if(digits[NP-1]>0)return false;return getNumericValue()>0}for(let i=0;i<ONES;i++)if(digits[i]>0)return true;return false}
 function updateMultDivBtns(){document.getElementById('multBtn').disabled=animating||!canMult();document.getElementById('divBtn').disabled=animating||!canDiv()}
 document.getElementById('multBtn').addEventListener('click',async()=>{if(animating||!canMult())return;animating=true;updateMultDivBtns();updatePMBar();await animateMult10();animating=false;updateMultDivBtns();updatePMBar()});
 document.getElementById('divBtn').addEventListener('click',async()=>{if(animating||!canDiv())return;animating=true;updateMultDivBtns();updatePMBar();await animateDiv10();animating=false;updateMultDivBtns();updatePMBar()});
