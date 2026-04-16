@@ -194,9 +194,10 @@ function ghostMacroCube(ctx,bx,by,su){
 }
 
 // ═══════ DRAW PLACE ═══════
+function isPlaceInNumeral(pi,d){d=d||digits;let first=-1;for(let i=0;i<=ONES;i++)if(d[i]>0){first=i;break}let lastDec=-1;for(let i=DEC;i<NP;i++)if(d[i]>0)lastDec=i;if(first<0&&lastDec<0)return pi===ONES;const start=first>=0?first:ONES;if(pi<=ONES)return pi>=start;return lastDec>=0&&pi<=lastDec}
 function drawPlace(ctx,ox,oy,pi,cW,H,zoom,od){
   const p=P[pi],cnt=(od||digits)[pi],col=p.color,u=unitForPlace(pi);if(u<0.3)return;
-  if(cnt===0&&!showZeros)return;
+  if(cnt===0&&!showZeros&&!isPlaceInNumeral(pi,od))return;
   // Sub-unit: the unit of the next smaller place. Used to draw macro-cubes as grids.
   const subU=(pi<NP-1&&(pi<ONES||(showDecimals&&pi===ONES)))?unitForPlace(pi+1):u;
   const step=u*(1+GAP),d=u*DEP,sL=stickLen(u),ds=d*0.6;
