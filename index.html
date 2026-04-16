@@ -35,7 +35,7 @@
     .pm-btn:disabled{opacity:0.3;cursor:not-allowed}
     .pm-lbl{font-size:7px;font-weight:900;color:#94a3b8;white-space:nowrap}
     #footer{flex-shrink:0;display:flex;align-items:center;justify-content:center;gap:4px;padding:6px 16px;font-size:10px;font-weight:700;text-transform:uppercase;color:#AEAEB2;letter-spacing:0.5px}
-    .footer-bead{display:inline-block;width:5px;height:5px;border-radius:50%;background:#d0d0d0;vertical-align:middle;margin:0 4px}
+    .footer-bead{display:inline-block;width:3px;height:3px;border-radius:50%;background:#AEAEB2;vertical-align:baseline;margin:0 4px}
   </style>
 </head>
 <body>
@@ -45,15 +45,14 @@
     <text x="88" y="30" font-family="Lexend, sans-serif" font-weight="300" font-size="28" fill="#1e293b">things.</text>
   </svg>
   <div class="btns">
-    <button class="ab mult" id="multBtn" title="×10" aria-label="Multiply by 10"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 3L5 8l5 5"/></svg></button>
-    <button class="ab mult" id="mult100Btn" title="×100" aria-label="Multiply by 100"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3L7 8l5 5"/><path d="M7 3L2 8l5 5"/></svg></button>
-    <button class="ab mult" id="mult1000Btn" title="×1,000" aria-label="Multiply by 1000"><svg width="20" height="16" viewBox="0 0 20 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3L11 8l5 5"/><path d="M11 3L6 8l5 5"/><path d="M6 3L1 8l5 5"/></svg></button>
-    <button class="ab divd" id="divBtn" title="÷10" aria-label="Divide by 10"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3l5 5-5 5"/></svg></button>
-    <button class="ab divd" id="div100Btn" title="÷100" aria-label="Divide by 100"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 3l5 5-5 5"/><path d="M9 3l5 5-5 5"/></svg></button>
-    <button class="ab divd" id="div1000Btn" title="÷1,000" aria-label="Divide by 1000"><svg width="20" height="16" viewBox="0 0 20 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 3l5 5-5 5"/><path d="M9 3l5 5-5 5"/><path d="M14 3l5 5-5 5"/></svg></button>
-    <button class="ab" id="decBtn" title="Decimals" aria-label="Toggle decimals"><svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><circle cx="8" cy="12" r="2.5"/></svg></button>
+    <button class="ab mult" id="multBtn" title="×10" aria-label="Multiply by 10">×10</button>
+    <button class="ab mult" id="mult100Btn" title="×100" aria-label="Multiply by 100">×100</button>
+    <button class="ab mult" id="mult1000Btn" title="×1,000" aria-label="Multiply by 1000">×1,000</button>
+    <button class="ab divd" id="divBtn" title="÷10" aria-label="Divide by 10">÷10</button>
+    <button class="ab divd" id="div100Btn" title="÷100" aria-label="Divide by 100">÷100</button>
+    <button class="ab divd" id="div1000Btn" title="÷1,000" aria-label="Divide by 1000">÷1,000</button>
     <button class="ab" id="lblBtn" title="Labels" aria-label="Toggle labels"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 8s3-5 7-5 7 5 7 5-3 5-7 5S1 8 1 8z"/><circle cx="8" cy="8" r="2.5"/></svg></button>
-    <button class="ab" id="zeroBtn" title="Show Zeros" aria-label="Toggle show zeros"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 8s3-5 7-5 7 5 7 5-3 5-7 5S1 8 1 8z"/><line x1="2" y1="14" x2="14" y2="2"/></svg></button>
+    <button class="ab" id="zeroBtn" title="Show Zeros" aria-label="Toggle show zeros">000</button>
   </div>
 </div>
 <div id="numBar">
@@ -79,6 +78,7 @@ let digits=Array(NP).fill(0);
 let showLabels=false,showZeros=false,showDecimals=false;
 let panX=0,zoomLvl=1.0,enteredStr='';
 let highlightedPlace=null,animating=false;
+function updateShowDecimals(){showDecimals=showZeros||digits[DEC]>0||digits[DEC+1]>0||digits[DEC+2]>0}
 
 function cs(hex,a){let r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);return`rgb(${Math.min(255,Math.max(0,r+a))},${Math.min(255,Math.max(0,g+a))},${Math.min(255,Math.max(0,b+a))})`}
 function bp(i,u){return i*u*(1+GAP)}
@@ -196,6 +196,7 @@ function ghostMacroCube(ctx,bx,by,su){
 // ═══════ DRAW PLACE ═══════
 function drawPlace(ctx,ox,oy,pi,cW,H,zoom,od){
   const p=P[pi],cnt=(od||digits)[pi],col=p.color,u=unitForPlace(pi);if(u<0.3)return;
+  if(cnt===0&&!showZeros)return;
   // Sub-unit: the unit of the next smaller place. Used to draw macro-cubes as grids.
   const subU=(pi<NP-1&&(pi<ONES||(showDecimals&&pi===ONES)))?unitForPlace(pi+1):u;
   const step=u*(1+GAP),d=u*DEP,sL=stickLen(u),ds=d*0.6;
@@ -225,6 +226,7 @@ function drawPlace(ctx,ox,oy,pi,cW,H,zoom,od){
 
 // ═══════ RENDER ═══════
 function render(od){
+  updateShowDecimals();
   const vpEl=document.getElementById('vp'),cv=document.getElementById('cv');
   const W=vpEl.clientWidth,H=vpEl.clientHeight,dpr=window.devicePixelRatio||1;
   cv.width=W*dpr;cv.height=H*dpr;cv.style.width=W+'px';cv.style.height=H+'px';
@@ -679,6 +681,7 @@ window.incrementPlace=incrementPlace;
 window.decrementPlace=decrementPlace;
 
 function updatePMBar(){
+  updateShowDecimals();
   const bar=document.getElementById('pmBar'),end=showDecimals?NP:DEC;
   let lo=ONES,hi=ONES;
   for(let i=0;i<end;i++)if(digits[i]>0){if(i<lo)lo=i;if(i>hi)hi=i}
@@ -692,9 +695,10 @@ function updatePMBar(){
 
 // ═══════ NUMBER DISPLAY ═══════
 function renderNum(){
+  updateShowDecimals();
   const disp=document.getElementById('numDisplay'),inp=document.getElementById('numInput');
   let rawStr;
-  if(showZeros){const whole=String(parseInt(digits.slice(0,ONES+1).join(''))||0);rawStr=showDecimals?addCommas(whole+'.'+digits.slice(ONES+1).join('')):addCommas(whole)}
+  if(showZeros){const whole=digits.slice(0,ONES+1).join('');rawStr=addCommas(whole+'.'+digits.slice(ONES+1).join(''))}
   else{rawStr=addCommas(digitsToStr());if(!showDecimals&&rawStr.includes('.')){const raw2=digitsToStr().split('.')[0];rawStr=addCommas(raw2)}}
   if(document.activeElement!==inp)inp.value=rawStr;
   let html='';const parts=rawStr.split('.'),wholePart=parts[0],decPart=parts[1]||'';
@@ -734,8 +738,7 @@ vpEl.addEventListener('touchstart',e=>{if(e.target.closest('.pm-grp'))return;e.p
 vpEl.addEventListener('touchmove',e=>{if(e.target.closest('.pm-grp'))return;e.preventDefault();if(e.touches.length===2&&pinching){const dist=tDist(e),mid=(e.touches[0].pageX+e.touches[1].pageX)/2,scale=dist/lastPD,oldZ=zoomLvl;zoomLvl=Math.max(ZOOM_MIN,Math.min(ZOOM_MAX,zoomLvl*scale));const rect=vpEl.getBoundingClientRect(),mx=mid-rect.left,vcx=vpEl.clientWidth/2;panX=(mx-vcx+panX)/oldZ*zoomLvl-(mx-vcx);lastPD=dist;render()}else if(e.touches.length===1&&!pinching){panX=tsp-(e.touches[0].pageX-tsx);render()}},{passive:false});
 vpEl.addEventListener('touchend',e=>{if(e.touches.length<2)pinching=false;if(e.touches.length===1){tsx=e.touches[0].pageX;tsp=panX}});
 document.getElementById('lblBtn').addEventListener('click',()=>{showLabels=!showLabels;document.getElementById('lblBtn').classList.toggle('on',showLabels);render()});
-document.getElementById('zeroBtn').addEventListener('click',()=>{showZeros=!showZeros;document.getElementById('zeroBtn').classList.toggle('on',showZeros);renderNum();updatePMBar()});
-document.getElementById('decBtn').addEventListener('click',()=>{showDecimals=!showDecimals;document.getElementById('decBtn').classList.toggle('on',showDecimals);if(!showDecimals&&highlightedPlace!==null&&highlightedPlace>=DEC)highlightedPlace=null;renderNum();render();updatePMBar()});
+document.getElementById('zeroBtn').addEventListener('click',()=>{showZeros=!showZeros;document.getElementById('zeroBtn').classList.toggle('on',showZeros);render();renderNum();updatePMBar()});
 document.getElementById('numInput').addEventListener('keydown',e=>{if(e.key!=='Enter')return;const raw=e.target.value.replace(/,/g,'').trim();if(!raw)return;const n=parseFloat(raw);if(isNaN(n)||n<0||n>=1e13)return;highlightedPlace=null;setNumber(n);enteredStr=raw;e.target.blur();renderNum();render();updateMultDivBtns();updatePMBar()});
 
 window.addEventListener('resize',()=>{render();updatePMBar()});
